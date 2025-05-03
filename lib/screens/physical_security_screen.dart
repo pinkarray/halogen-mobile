@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-
 import '../widgets/physical_security_progress_bar.dart';
 import '../widgets/halogen_back_button.dart';
 import '../widgets/glowing_arrows_button.dart';
 import '../widgets/bounce_tap.dart';
-
 import 'location_confirmation_screen.dart';
 import 'desired_services_screen.dart';
 import '../providers/user_form_data_provider.dart';

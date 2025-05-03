@@ -1,168 +1,170 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'dashboard_screen.dart';
-import 'services_screen.dart';
-import 'physical_security_screen.dart';
-import 'digital_security_screen.dart';
-import 'people_risk_screen.dart';
-import 'secured_mobility_screen.dart';
-import 'other_services_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  ProfileScreenState createState() => ProfileScreenState();
+  State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends State<ProfileScreen> {
+  String username = "John Doe";
+
+  void _showEditBottomSheet() {
+    final TextEditingController nameController = TextEditingController(text: username);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: MediaQuery.of(context).viewInsets,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "Edit Profile",
+                  style: TextStyle(
+                    fontFamily: 'Objective',
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: Color(0xFF1C2B66),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: nameController,
+                  decoration: InputDecoration(
+                    labelText: "Full Name",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      username = nameController.text;
+                    });
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFCC29),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    "Save",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Objective',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ✅ Profile Header with Border and Shadow
-            Padding(
-              padding: EdgeInsets.fromLTRB(20, 60, 20, 20),
-              child: Row(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 3),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 8,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: CircleAvatar(
-                      radius: 30,
-                      backgroundImage: AssetImage("assets/images/profile.jpeg"),
-                    ),
-                  ).animate().fade(duration: 800.ms).scale(duration: 600.ms),
-                  SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.white, Color(0xFFFFFAEA)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              const SizedBox(height: 60),
+              GestureDetector(
+                onTap: _showEditBottomSheet,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
                     children: [
-                      Text(
-                        "John Doe",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Objective',
-                          color: Color(0xFF1C2B66),
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 3),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 8,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
                         ),
-                      ),
-                      Text(
-                        "Premium Member",
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontFamily: 'Objective',
-                          color: Colors.grey[600],
+                        child: const CircleAvatar(
+                          radius: 30,
+                          backgroundImage: AssetImage("assets/images/avatar.jpeg"),
                         ),
-                      ),
+                      ).animate().fade(duration: 800.ms).scale(duration: 600.ms),
+                      const SizedBox(width: 16),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            username,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Objective',
+                              color: Color(0xFF1C2B66),
+                            ),
+                          ),
+                          Text(
+                            "Premium Member",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontFamily: 'Objective',
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      )
                     ],
-                  )
-                ],
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(height: 40),
 
-            SizedBox(height: 20),
+              _buildProfileOption(Icons.security, "Security Settings"),
+              _buildProfileOption(Icons.notifications, "Notifications"),
+              _buildProfileOption(Icons.payment, "Subscription & Billing"),
+              _buildProfileOption(Icons.support_agent, "Help & Support"),
+              _buildProfileOption(Icons.settings, "App Settings"),
 
-            // ✅ Grid of Service Tiles (Left-Aligned with Colorful Icons)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: GridView.count(
-                crossAxisCount: 2,
-                crossAxisSpacing: 15,
-                mainAxisSpacing: 15,
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                childAspectRatio: 5 / 2,
-                children: [
-                  _buildServiceTile(Icons.security, "Physical Security", () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => PhysicalSecurityScreen()),
-                    );
-                  }, Colors.deepPurple),
-                  _buildServiceTile(Icons.directions_car, "Secured Mobility", () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => SecuredMobilityScreen()),
-                    );
-                  }, Colors.orange),
-                  _buildServiceTile(Icons.privacy_tip, "Digital Security", () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => DigitalSecurityScreen()),
-                    );
-                  }, Colors.indigo),
-                  _buildServiceTile(Icons.people, "People Risk Mgmt", () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => PeopleRiskScreen()),
-                    );
-                  }, Colors.green),
-                  _buildServiceTile(Icons.grid_view, "Also by Halogen", () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => OtherServicesScreen()),
-                    );
-                  }, Colors.teal),
-                ],
-              ),
-            ),
+              const SizedBox(height: 30),
 
-            SizedBox(height: 30),
-
-            // ✅ Settings List
-            _buildProfileOption(
-              icon: Icons.security,
-              title: "Security Settings",
-              onTap: () {},
-            ),
-            _buildProfileOption(
-              icon: Icons.notifications,
-              title: "Notifications",
-              onTap: () {},
-            ),
-            _buildProfileOption(
-              icon: Icons.payment,
-              title: "Subscription & Billing",
-              onTap: () {},
-            ),
-            _buildProfileOption(
-              icon: Icons.support_agent,
-              title: "Help & Support",
-              onTap: () {},
-            ),
-            _buildProfileOption(
-              icon: Icons.settings,
-              title: "App Settings",
-              onTap: () {},
-            ),
-
-            SizedBox(height: 30),
-
-            // ✅ Logout
-            Center(
-              child: ElevatedButton(
+              ElevatedButton(
                 onPressed: () {},
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFFFFCC29),
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                  backgroundColor: const Color(0xFFFFCC29),
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                child: Row(
+                child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.logout, color: Colors.black),
@@ -178,115 +180,39 @@ class ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
               ).animate().fade(duration: 1200.ms).scale(duration: 700.ms),
-            ),
 
-            SizedBox(height: 30),
-          ],
+              const SizedBox(height: 30),
+            ],
+          ),
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 2,
-        selectedItemColor: Color(0xFFFFCC29),
-        unselectedItemColor: Color(0xFF1C2B66),
-        backgroundColor: Colors.white,
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.pushReplacement(context,
-                MaterialPageRoute(builder: (context) => DashboardScreen()));
-          } else if (index == 1) {
-            Navigator.pushReplacement(context,
-                MaterialPageRoute(builder: (context) => ServicesScreen()));
-          }
-        },
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.security), label: "Services"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-        ],
       ),
     );
   }
 
-  Widget _buildServiceTile(IconData icon, String label, VoidCallback onTap, Color iconColor) {
-    final int adjustedAlpha = (iconColor.alpha * 0.1).round();
-
+  Widget _buildProfileOption(IconData icon, String title) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {},
       child: Container(
-        padding: EdgeInsets.all(12),
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(15),
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
-              color: Color.fromRGBO(0, 0, 0, 0.05),
+              color: Color.fromRGBO(0, 0, 0, 0.1),
               blurRadius: 5,
             ),
           ],
         ),
         child: Row(
           children: [
-            Container(
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Color.fromARGB(
-                  adjustedAlpha,
-                  iconColor.red,
-                  iconColor.green,
-                  iconColor.blue,
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, size: 24, color: iconColor),
-            ),
-            SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                label,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontFamily: 'Objective',
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: Color(0xFF1C2B66),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProfileOption({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        padding: EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(15),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha((0.1 * 255).toInt()),
-              blurRadius: 5,
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: Color(0xFF1C2B66)),
-            SizedBox(width: 15),
+            Icon(icon, color: const Color(0xFF1C2B66)),
+            const SizedBox(width: 15),
             Expanded(
               child: Text(
                 title,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   fontFamily: 'Objective',
                   fontWeight: FontWeight.bold,
@@ -294,7 +220,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
             ),
-            Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+            const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
           ],
         ),
       ),

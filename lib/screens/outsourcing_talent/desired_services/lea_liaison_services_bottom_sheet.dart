@@ -102,42 +102,61 @@ class _LeaLiaisonServicesBottomSheetState extends State<LeaLiaisonServicesBottom
               final selected = selectedOptions[key] ?? false;
               final quantity = optionQuantities[key] ?? 1;
 
-              return ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Checkbox(
-                  value: selected,
-                  onChanged: (val) {
-                    setState(() {
-                      selectedOptions[key] = val ?? false;
-                    });
-                  },
-                  activeColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                ),
-                title: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(label, style: const TextStyle(fontSize: 14)),
-                    if (selected)
-                      DropdownButton<int>(
-                        value: quantity,
-                        borderRadius: BorderRadius.circular(8),
-                        style: const TextStyle(fontSize: 14, color: Colors.black),
-                        underline: const SizedBox(),
-                        onChanged: (val) {
-                          if (val != null) {
-                            setState(() {
-                              optionQuantities[key] = val;
-                            });
-                          }
-                        },
-                        items: [1, 2, 3]
-                            .map((num) => DropdownMenuItem<int>(
-                                  value: num,
-                                  child: Text('$num'),
-                                ))
-                            .toList(),
+                    Checkbox(
+                      value: selected,
+                      onChanged: (val) {
+                        setState(() {
+                          selectedOptions[key] = val ?? false;
+                        });
+                      },
+                      activeColor: Colors.black,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            label,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              fontFamily: 'Objective',
+                            ),
+                          ),
+                          if (selected)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: DropdownButton<int>(
+                                value: quantity,
+                                isDense: true,
+                                borderRadius: BorderRadius.circular(8),
+                                style: const TextStyle(fontSize: 14, color: Colors.black),
+                                underline: const SizedBox(),
+                                onChanged: (val) {
+                                  if (val != null) {
+                                    setState(() {
+                                      optionQuantities[key] = val;
+                                    });
+                                  }
+                                },
+                                items: [1, 2, 3]
+                                    .map((num) => DropdownMenuItem<int>(
+                                          value: num,
+                                          child: Text('$num'),
+                                        ))
+                                    .toList(),
+                              ),
+                            ),
+                        ],
                       ),
+                    ),
                   ],
                 ),
               );

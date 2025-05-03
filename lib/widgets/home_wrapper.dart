@@ -3,7 +3,7 @@ import 'bounce_tap.dart';
 import 'package:halogen/screens/dashboard_screen.dart';
 import 'package:halogen/screens/services_screen.dart';
 import 'package:halogen/screens/profile_screen.dart';
-import 'package:halogen/screens/monitoring_screen.dart';
+import 'package:halogen/screens/monitoring_services_screen.dart';
 
 class HomeWrapper extends StatefulWidget {
   const HomeWrapper({super.key});
@@ -17,7 +17,7 @@ class _HomeWrapperState extends State<HomeWrapper> with TickerProviderStateMixin
   final List<Widget> _screens = const [
     DashboardScreen(),
     ServicesScreen(),
-    MonitoringScreen(),
+    MonitoringServicesScreen(),
     ProfileScreen(),
   ];
 

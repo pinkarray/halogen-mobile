@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class ShakeWidget extends StatefulWidget {
   final Widget child;
 
-  const ShakeWidget({Key? key, required this.child}) : super(key: key);
+  const ShakeWidget({super.key, required this.child});
 
   @override
   ShakeWidgetState createState() => ShakeWidgetState();

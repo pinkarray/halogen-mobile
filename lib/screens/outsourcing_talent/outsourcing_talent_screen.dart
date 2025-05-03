@@ -13,66 +13,73 @@ class OutsourcingTalentScreen extends StatelessWidget {
     final provider = context.watch<UserFormDataProvider>();
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.white, Color(0xFFFFFAEA)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+      body: SafeArea(  // ← Fixes issue with screen being too close to top
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.white, Color(0xFFFFFAEA)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
           ),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: const [
-                HalogenBackButton(),
-                SizedBox(width: 12),
-                Text(
-                  'Outsourcing & Talent Risk',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Objective',
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const HalogenBackButton(),
+                  const SizedBox(width: 12),
+                  // Flexible allows the text to wrap if needed
+                  Flexible(
+                    child: Text(
+                      'Outsourcing & Talent Risk Management',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Objective',
+                      ),
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
+                ],
+              ),
+              const SizedBox(height: 24),
 
-            OutsourcingProgressBar(
-              currentStep: provider.getCurrentOutsourcingStage(),
-              stage1ProgressPercent: provider.stage1ProgressPercent,
-              stage2Completed: provider.stage2Completed,
-              stage3Completed: provider.stage3Completed,
-            ),
+              OutsourcingProgressBar(
+                currentStep: provider.getCurrentOutsourcingStage(),
+                stage1ProgressPercent: provider.stage1ProgressPercent,
+                stage2Completed: provider.stage2Completed,
+                stage3Completed: provider.stage3Completed,
+              ),
 
-            const SizedBox(height: 24),
+              const SizedBox(height: 24),
 
-            _buildTile(
-            context,
-            'Desired Services',
-            '/outsourcing-talent/desired-services',
-            provider.stage1ProgressPercent >= 1.0,
+              _buildTile(
+                context,
+                'Desired Services',
+                '/outsourcing-talent/desired-services',
+                provider.stage1ProgressPercent >= 1.0,
+              ),
+              _buildTile(
+                context,
+                'Description of Need',
+                '/outsourcing-talent/description',
+                provider.stage2Completed,
+              ),
+              _buildTile(
+                context,
+                'Confirmation',
+                '/outsourcing-talent/confirmation',
+                provider.stage3Completed,
+              ),
+            ],
           ),
-          _buildTile(
-            context,
-            'Description of Need',
-            '/outsourcing-talent/description',
-            provider.stage2Completed,
-          ),
-          _buildTile(
-            context,
-            'Confirmation',
-            '/outsourcing-talent/confirmation',
-            provider.stage3Completed,
-          ),
-          ],
         ),
       ),
     );
   }
+
 
   Widget _buildTile(BuildContext context, String label, String route, bool completed) {
     IconData icon;

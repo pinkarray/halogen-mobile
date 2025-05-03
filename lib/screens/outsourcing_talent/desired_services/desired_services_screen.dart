@@ -148,6 +148,8 @@ class _OutsourcingDesiredServicesScreenState extends State<OutsourcingDesiredSer
 
     return Scaffold(
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Colors.white, Color(0xFFFFFAEA)],
@@ -155,75 +157,89 @@ class _OutsourcingDesiredServicesScreenState extends State<OutsourcingDesiredSer
             end: Alignment.bottomCenter,
           ),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: const [
-                HalogenBackButton(),
-                SizedBox(width: 12),
-                Text(
-                  'Desired Services',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Objective',
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: const [
+                    HalogenBackButton(),
+                    SizedBox(width: 12),
+                    Flexible(
+                      child: Text(
+                        'Desired Services',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Objective',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                OutsourcingProgressBar(
+                  currentStep: provider.getCurrentOutsourcingStage(),
+                  stage1ProgressPercent: provider.stage1ProgressPercent,
+                ),
+
+                const SizedBox(height: 24),
+
+                // 👇 Reduce visual dominance so gradient shines through
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.92), // ⬅️ slightly transparent
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.03),
+                        blurRadius: 6,
+                        offset: const Offset(0, 3),
+                      )
+                    ],
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Column(
+                    children: List.generate(services.length, (index) {
+                      final title = services[index];
+                      final key = sectionKeys[index];
+                      final isChecked = checkedStates[key] ?? false;
+
+                      return Column(
+                        children: [
+                          ListTile(
+                            leading: Checkbox(
+                              value: isChecked,
+                              onChanged: (val) => _handleCheck(key, val!),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                              activeColor: Colors.black,
+                            ),
+                            title: Text(
+                              title,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontFamily: 'Objective',
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.black),
+                              onPressed: () => _handleDropdownTap(key),
+                            ),
+                          ),
+                          if (index != services.length - 1)
+                            const Divider(height: 1, color: Color(0xFFE0E0E0)),
+                        ],
+                      );
+                    }),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 24),
-
-            OutsourcingProgressBar(
-              currentStep: provider.getCurrentOutsourcingStage(),
-              stage1ProgressPercent: provider.stage1ProgressPercent,
-            ),
-
-            const SizedBox(height: 24),
-
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Column(
-                children: List.generate(services.length, (index) {
-                  final title = services[index];
-                  final key = sectionKeys[index];
-                  final isChecked = checkedStates[key] ?? false;
-
-                  return Column(
-                    children: [
-                      ListTile(
-                        leading: Checkbox(
-                          value: isChecked,
-                          onChanged: (val) => _handleCheck(key, val!),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                          activeColor: Colors.black,
-                        ),
-                        title: Text(
-                          title,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontFamily: 'Objective',
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.black),
-                          onPressed: () => _handleDropdownTap(key),
-                        ),
-                      ),
-                      if (index != services.length - 1)
-                        const Divider(height: 1, color: Color(0xFFE0E0E0)),
-                    ],
-                  );
-                }),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
