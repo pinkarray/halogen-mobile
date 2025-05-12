@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'onboarding_screen.dart';
+import '../modules/onboarding/onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -38,6 +38,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     // Navigate after animation
     Future.delayed(const Duration(milliseconds: 2000), () {
+      if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const OnboardingScreen()),
       );

@@ -130,11 +130,17 @@ Future<Map<String, dynamic>> loginUser({
   return _handleResponse(response);
 }
 
-// ✅ Handle API Responses
 Map<String, dynamic> _handleResponse(http.Response response) {
   if (response.statusCode >= 200 && response.statusCode < 300) {
     return jsonDecode(response.body);
   } else {
-    throw Exception('❌ API Error: ${response.statusCode} ${response.body}');
+    final decoded = jsonDecode(response.body);
+    final message = decoded['message']?.toLowerCase() ?? '';
+
+    if (message.contains('incorrect') || message.contains('invalid')) {
+      throw Exception('Incorrect username or password.');
+    }
+
+    throw Exception(decoded['message'] ?? 'An unexpected error occurred.');
   }
 }

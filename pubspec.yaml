@@ -1,5 +1,5 @@
 name: halogen
-description: "A new Flutter project."
+description: "A Security App."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -31,9 +31,15 @@ dependencies:
   flutter:
     sdk: flutter
   provider: ^6.1.1 
-  intl: ^0.18.1
+  intl: ^0.17.0
   http: ^1.2.0
   flutter_launcher_icons: ^0.13.1
+  another_flushbar: ^1.10.29
+  flutter_paystack:
+    path: packages/flutter_paystack
+  fluttertoast: ^8.2.2
+  url_launcher: ^6.2.5
+
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -49,13 +55,15 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_native_splash: ^2.3.2
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^5.0.0
+  
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -74,6 +82,7 @@ flutter:
     - assets/images/tip_bg.png
     - assets/images/guide.png
     - assets/images/car.png
+    - assets/images/secured.png
     - assets/icons/physical_security.png
     - assets/icons/secured_mobility.png
     - assets/icons/logocut.png
@@ -93,6 +102,7 @@ flutter:
     - assets/images/ikoyi_asset.jpeg
     - assets/images/profile.jpeg
     - assets/images/avatar.jpeg
+    - assets/images/sparkle_overlay.jpg
     
 
   fonts:
@@ -139,3 +149,5 @@ flutter_icons:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+dependency_overrides:
+  http: ^0.13.5

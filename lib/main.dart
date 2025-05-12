@@ -1,26 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:provider/provider.dart';
 import 'providers/user_form_data_provider.dart';
 import 'screens/splash_screen.dart';
-import 'screens/services_screen.dart';
-import 'screens/physical_security_screen.dart';
-import 'screens/continue_registration_screen.dart';
-import 'screens/secured_mobility/desired_services/desired_services_screen.dart';
-import 'screens/secured_mobility/secured_mobility_screen.dart';
-import 'screens/secured_mobility/service_configuration_screen.dart';
-import 'screens/secured_mobility/schedule_service_screen.dart';
-import "screens/secured_mobility/confirm_order_screen.dart";
-import 'screens/secured_mobility/payment_screen.dart';
-import 'screens/outsourcing_talent/desired_services/desired_services_screen.dart';
-import 'screens/outsourcing_talent/outsourcing_talent_screen.dart';
-import 'screens/outsourcing_talent/description_of_need_screen.dart';
-import 'screens/outsourcing_talent/confirmation_screen.dart';
+import 'modules/login/login_provider.dart';
+import 'modules/onboarding/signup/signup_provider.dart';
+import 'modules/services/services_screen.dart';
+import 'modules/services/physical_security/providers/physical_security_provider.dart';
+import 'modules/services/secured_mobility/providers/secured_mobility_provider.dart';
+import 'modules/services/outsourcing_talent/providers/outsourcing_talent_provider.dart';
+import 'modules/services/digital_security/provider/digital_security_provider.dart';
+import 'modules/services/physical_security/physical_security_screen.dart';
+import 'modules/onboarding/continue_registration/continue_registration_screen.dart';
+import 'modules/services/secured_mobility/desired_services/desired_services_screen.dart';
+import 'modules/services/secured_mobility/secured_mobility_screen.dart';
+import 'modules/services/secured_mobility/service_configuration_screen.dart';
+import 'modules/services/secured_mobility/schedule_service_screen.dart';
+import "modules/services/secured_mobility/confirm_order_screen.dart";
+import 'modules/services/secured_mobility/payment_screen.dart';
+import 'modules/services/outsourcing_talent/desired_services/desired_services_screen.dart';
+import 'modules/services/outsourcing_talent/outsourcing_talent_screen.dart';
+import 'modules/services/outsourcing_talent/description_of_need_screen.dart';
+import 'modules/services/outsourcing_talent/confirmation_screen.dart';
+final _paystackPlugin = PaystackPlugin();
+PaystackPlugin get paystackPlugin => _paystackPlugin;
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await _paystackPlugin.initialize(publicKey: 'pk_test_bac11afca4b729bd239796a97bdd457ebf32af03');
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => UserFormDataProvider()),
+        ChangeNotifierProvider(create: (_) => LoginProvider()),
+        ChangeNotifierProvider(create: (_) => SignUpProvider()),
+        ChangeNotifierProvider(create: (_) => PhysicalSecurityProvider()),
+        ChangeNotifierProvider(create: (_) => SecuredMobilityProvider()),
+        ChangeNotifierProvider(create: (_) => OutsourcingTalentProvider()),
+        ChangeNotifierProvider(create: (_) => DigitalSecurityProvider()),
       ],
       child: const HalogenApp(),
     ),
@@ -42,10 +61,16 @@ class HalogenApp extends StatelessWidget {
           seedColor: Colors.black,
           brightness: Brightness.light,
         ),
-        timePickerTheme: const TimePickerThemeData(
+        timePickerTheme: TimePickerThemeData(
           backgroundColor: Colors.white,
           hourMinuteTextColor: Colors.black,
           dayPeriodTextColor: Colors.black,
+          dayPeriodShape: RoundedRectangleBorder(), // Optional for rounded button
+        dayPeriodColor: WidgetStateColor.resolveWith((states) =>
+          states.contains(WidgetState.selected)
+            ? const Color(0xFFFFCC29)
+            : Colors.white),
+          // Default background when not selected
           dialHandColor: Colors.black,
           dialBackgroundColor: Color(0xFFEDEDED),
           hourMinuteColor: Color(0xFFEDEDED),
@@ -54,19 +79,32 @@ class HalogenApp extends StatelessWidget {
             borderRadius: BorderRadius.all(Radius.circular(16)),
           ),
         ),
-        datePickerTheme: const DatePickerThemeData(
+        datePickerTheme: DatePickerThemeData(
           backgroundColor: Colors.white,
           headerForegroundColor: Colors.black,
-          dayForegroundColor: WidgetStatePropertyAll(Colors.black),
+          dayForegroundColor: WidgetStatePropertyAll(Colors.black), // ✅ keep this one
           todayBackgroundColor: WidgetStatePropertyAll(Colors.black),
           todayForegroundColor: WidgetStatePropertyAll(Colors.white),
+          dayOverlayColor: WidgetStatePropertyAll(Color(0xFFFFCC29)), // brand yellow for selected day
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.black, // Cancel/OK buttons
+            textStyle: const TextStyle(fontFamily: 'Objective'),
+          ),
         ),
         inputDecorationTheme: const InputDecorationTheme(
           border: OutlineInputBorder(),
           focusedBorder: OutlineInputBorder(
             borderSide: BorderSide(color: Colors.black),
           ),
+          labelStyle: TextStyle(color: Colors.black),
           suffixIconColor: Colors.black,
+        ),
+        textSelectionTheme: const TextSelectionThemeData(
+          cursorColor: Colors.black,
+          selectionColor: Colors.black26,
+          selectionHandleColor: Colors.black,
         ),
         checkboxTheme: CheckboxThemeData(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
@@ -104,10 +142,13 @@ class HalogenApp extends StatelessWidget {
             (context) => const ScheduleServiceScreen(),
         '/secured-mobility/summary': (context) => const ConfirmOrderScreen(),
         '/secured-mobility/payment': (context) => const PaymentScreen(),
-        '/outsourcing-talent/desired-services': (context) => const OutsourcingDesiredServicesScreen(),
+        '/outsourcing-talent/desired-services':
+            (context) => const OutsourcingDesiredServicesScreen(),
         '/outsourcing-talent': (context) => const OutsourcingTalentScreen(),
-        '/outsourcing-talent/description': (context) => const DescriptionOfNeedScreen(),
-        '/outsourcing-talent/confirmation': (context) => const ConfirmationScreen(),
+        '/outsourcing-talent/description':
+            (context) => const DescriptionOfNeedScreen(),
+        '/outsourcing-talent/confirmation':
+            (context) => const ConfirmationScreen(),
       },
     );
   }

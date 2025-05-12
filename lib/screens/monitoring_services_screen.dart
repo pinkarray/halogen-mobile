@@ -114,7 +114,7 @@ class MonitoringServicesScreen extends StatelessWidget {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFFFCC29).withOpacity(0.6),
+                      color: const Color(0xFFFFCC29).withValues(alpha: 0.5),
                       blurRadius: 20,
                       spreadRadius: 1,
                     )
