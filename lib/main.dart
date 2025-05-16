@@ -12,6 +12,7 @@ import 'modules/services/outsourcing_talent/providers/outsourcing_talent_provide
 import 'modules/services/digital_security/provider/digital_security_provider.dart';
 import 'modules/services/physical_security/physical_security_screen.dart';
 import 'modules/onboarding/continue_registration/continue_registration_screen.dart';
+import 'modules/wallet/provider/wallet_provider.dart';
 import 'modules/services/secured_mobility/desired_services/desired_services_screen.dart';
 import 'modules/services/secured_mobility/secured_mobility_screen.dart';
 import 'modules/services/secured_mobility/service_configuration_screen.dart';
@@ -24,6 +25,7 @@ import 'modules/services/outsourcing_talent/description_of_need_screen.dart';
 import 'modules/services/outsourcing_talent/confirmation_screen.dart';
 final _paystackPlugin = PaystackPlugin();
 PaystackPlugin get paystackPlugin => _paystackPlugin;
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +42,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => SecuredMobilityProvider()),
         ChangeNotifierProvider(create: (_) => OutsourcingTalentProvider()),
         ChangeNotifierProvider(create: (_) => DigitalSecurityProvider()),
+        ChangeNotifierProvider(create: (_) => WalletProvider()),
       ],
       child: const HalogenApp(),
     ),
@@ -52,6 +55,8 @@ class HalogenApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: "Halogen",
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primaryColor: Colors.black,
@@ -80,13 +85,30 @@ class HalogenApp extends StatelessWidget {
           ),
         ),
         datePickerTheme: DatePickerThemeData(
-          backgroundColor: Colors.white,
-          headerForegroundColor: Colors.black,
-          dayForegroundColor: WidgetStatePropertyAll(Colors.black), // ✅ keep this one
-          todayBackgroundColor: WidgetStatePropertyAll(Colors.black),
-          todayForegroundColor: WidgetStatePropertyAll(Colors.white),
-          dayOverlayColor: WidgetStatePropertyAll(Color(0xFFFFCC29)), // brand yellow for selected day
-        ),
+        backgroundColor: Colors.white,
+        headerForegroundColor: Colors.black,
+
+        // 🔘 Today styling (black circle)
+        todayBackgroundColor: WidgetStatePropertyAll(Colors.black),
+        todayForegroundColor: WidgetStatePropertyAll(Colors.white),
+
+        // ✅ Selected day styling (brand yellow circle with black text)
+        dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const Color(0xFFFFCC29); // brand yellow
+          }
+          return null; // fallback to default
+        }),
+        dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return Colors.black;
+          }
+          return Colors.black;
+        }),
+
+        // ❌ Remove tap overlay flicker
+        dayOverlayColor: WidgetStatePropertyAll(Colors.transparent),
+      ),
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
             foregroundColor: Colors.black, // Cancel/OK buttons

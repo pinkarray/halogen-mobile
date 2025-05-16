@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
+import '../../models/login_result.dart';
+import '../../models/user_model.dart';
 
 class LoginProvider with ChangeNotifier {
   bool _isLoading = false;
@@ -8,7 +10,7 @@ class LoginProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  Future<bool> login({
+  Future<LoginResult> login({
     required String phoneNumber,
     required String password,
     required String deviceId,
@@ -26,9 +28,17 @@ class LoginProvider with ChangeNotifier {
 
       debugPrint("✅ Login successful: $response");
 
+      final data = response['data'];
+
       _isLoading = false;
       notifyListeners();
-      return true;
+
+      return LoginResult(
+        success: response['success'] == true,
+        token: data['token'],
+        user: UserModel.fromJson(data['user']),
+        deviceId: deviceId, // Still optional, adjust if needed
+      );
     } catch (e) {
       if (e.toString().contains("SocketException")) {
         _errorMessage = "Network connection failed. Please check your internet.";
@@ -37,7 +47,7 @@ class LoginProvider with ChangeNotifier {
       }
       _isLoading = false;
       notifyListeners();
-      return false;
+      return LoginResult(success: false);
     }
   }
 }

@@ -1,85 +1,115 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'call_agent_screen.dart';
+import '../../../shared/widgets/halogen_back_button.dart';
 
 class ContactOptionsScreen extends StatelessWidget {
   const ContactOptionsScreen({super.key});
 
+  void _launchCall() async {
+    final Uri telUri = Uri(scheme: 'tel', path: '09056546768');
+    if (await canLaunchUrl(telUri)) {
+      await launchUrl(telUri);
+    } else {
+      debugPrint('❌ Could not launch phone dialer');
+    }
+  }
+
   void _launchEmail() async {
-    final Uri emailUri = Uri(
-      scheme: 'mailto',
-      path: 'support@halogen.com',
-      query: 'subject=Customer Support Request',
+    final Uri emailUri = Uri.parse(
+      'mailto:support@halogen.com?subject=Customer Support Request',
     );
     if (await canLaunchUrl(emailUri)) {
-      await launchUrl(emailUri);
+      await launchUrl(emailUri, mode: LaunchMode.externalApplication);
     } else {
-      debugPrint('Could not launch email');
+      debugPrint('❌ Could not launch email');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFFFFAEA),
       body: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.white, Color(0xFFFFFAEA)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  const SizedBox(width: 10),
-                  const Expanded(
-                    child: Text(
-                      'Contact us',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Objective',
-                      ),
+                  const HalogenBackButton(), // or IconButton
+                  const Spacer(),
+                  const Text(
+                    "Contact us",
+                    style: TextStyle(
+                      fontFamily: 'Objective',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black,
                     ),
                   ),
+                  const Spacer(flex: 2), // balances back button spacing
                 ],
               ),
-              const SizedBox(height: 20),
-              const Text(
+            ),
+            const SizedBox(height: 24),
+
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
                 'Select your preferred mode of contacting our customer service agents',
                 style: TextStyle(
                   fontSize: 13,
                   fontFamily: 'Objective',
+                  color: Colors.black87,
                 ),
               ),
-              const SizedBox(height: 20),
-              ListTile(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const CallAgentScreen()),
-                ),
-                title: const Text('Call agent',
-                    style: TextStyle(fontFamily: 'Objective')),
-                trailing: const Icon(Icons.chevron_right),
+            ),
+
+            const SizedBox(height: 24),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  _buildOptionTile("Call agent", _launchCall),
+                  const SizedBox(height: 12),
+                  _buildOptionTile("Send a mail", _launchEmail),
+                ],
               ),
-              ListTile(
-                onTap: _launchEmail,
-                title: const Text('Send a mail',
-                    style: TextStyle(fontFamily: 'Objective')),
-                trailing: const Icon(Icons.chevron_right),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOptionTile(String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          // subtle border instead of shadow
+          border: Border.all(color: Colors.black12),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                fontFamily: 'Objective',
+                fontSize: 14,
+                color: Color(0xFF1C2B66),
               ),
-            ],
-          ),
+            ),
+            const Icon(Icons.chevron_right, color: Colors.grey),
+          ],
         ),
       ),
     );

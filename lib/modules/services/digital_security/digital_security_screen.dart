@@ -154,7 +154,6 @@ class DigitalSecurityScreen extends StatelessWidget {
               ),
               const SizedBox(height: 12),
 
-              // Services List
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,

@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  local_auth: ^2.1.6
   flutter:
     sdk: flutter
   provider: ^6.1.1 
@@ -39,6 +40,7 @@ dependencies:
     path: packages/flutter_paystack
   fluttertoast: ^8.2.2
   url_launcher: ^6.2.5
+  shared_preferences: ^2.2.2
 
 
   # The following adds the Cupertino Icons font to your application.

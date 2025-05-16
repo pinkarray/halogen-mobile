@@ -8,7 +8,6 @@ import '../../../screens/risk_section_c.dart';
 import '../../../screens/risk_section_d.dart';
 import '../../../screens/risk_section_e.dart';
 
-
 class ContinueRegistrationScreen extends StatelessWidget {
   const ContinueRegistrationScreen({super.key});
 
@@ -46,7 +45,6 @@ class ContinueRegistrationScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ✅ Progress bar
             CustomProgressBar(
               currentStep: 2,
               subStep: completedSections.length,
@@ -55,7 +53,6 @@ class ContinueRegistrationScreen extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // ✅ Section tiles (A–K)
             Expanded(
               child: ListView.builder(
                 itemCount: sectionTitles.length,
@@ -105,11 +102,11 @@ class ContinueRegistrationScreen extends StatelessWidget {
                         vertical: 18,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1C2B66), // dark blue background
+                        color: const Color(0xFF1C2B66),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 13),
+                            color: Colors.black.withValues(alpha: 0.5),
                             blurRadius: 6,
                             offset: const Offset(0, 3),
                           ),
@@ -138,7 +135,7 @@ class ContinueRegistrationScreen extends StatelessWidget {
                                 fontFamily: 'Objective',
                                 fontWeight: FontWeight.w500,
                                 fontSize: 16,
-                                color: Colors.white, // white text on dark tile
+                                color: Colors.white, 
                               ),
                             ),
                           ),

@@ -8,6 +8,7 @@ import '../../../shared/widgets/service_detail_options.dart';
 import '../../../shared/widgets/glowing_arrows_button.dart';
 import 'package:provider/provider.dart';
 import './providers/physical_security_provider.dart';
+import '../../../shared/widgets/home_wrapper.dart';
 
 class DesiredServicesScreen extends StatefulWidget {
   const DesiredServicesScreen({super.key});
@@ -55,7 +56,12 @@ class _DesiredServicesScreenState extends State<DesiredServicesScreen> {
                 const SizedBox(height: 24),
                 GlowingArrowsButton(
                   text: 'Okay',
-                  onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil('/services', (route) => false),
+                  onPressed: () {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (_) => const HomeWrapper(initialIndex: 1)), // 1 = Services tab
+                      (route) => false,
+                    );
+                  },
                 ),
               ],
             ),
@@ -134,65 +140,107 @@ class _DesiredServicesScreenState extends State<DesiredServicesScreen> {
             );
           },
         );
-      },
-    ).then((_) {
-      // ✅ Now mark as complete AFTER sheet closes
-      _markServiceComplete(title);
-    });
+      }).then((_) {
+        final structured = provider.structuredSelections[title];
+        final flat = provider.flatSelections[title];
+
+        final hasStructuredInput = structured?.values.any((group) =>
+            group.values.any((value) => value.toString().isNotEmpty)) ?? false;
+
+        final hasFlatInput = flat?.toString().isNotEmpty ?? false;
+
+        if (hasStructuredInput || hasFlatInput) {
+          _markServiceComplete(title);
+        } else {
+          print("⚠️ No valid input for '$title' — service not marked complete.");
+        }
+      }
+    );
   }
 
-  Widget _buildServiceTile(String title) {
+  Widget _buildServiceTile(String title, int index, IconData icon) {
     return Consumer<PhysicalSecurityProvider>(
       builder: (context, provider, _) {
         final isSelected = provider.selectedServices.contains(title);
 
+        bool enabled = true;
+        if (index > 0) {
+          final previousTitles = [
+            "Perimeter Protection",
+            "Patrol",
+            "Visitor Management System",
+            "Intrusion Detection",
+            "Alarm"
+          ];
+          final previousTitle = previousTitles[index - 1];
+          enabled = provider.selectedServices.contains(previousTitle);
+        }
+
+        Widget trailingIcon;
+        if (isSelected) {
+          trailingIcon = const CircleAvatar(
+            radius: 12,
+            backgroundColor: Colors.green,
+            child: Icon(Icons.check, size: 14, color: Colors.white),
+          );
+        } else {
+          trailingIcon = Icon(Icons.arrow_forward_ios_rounded,
+              size: 18, color: enabled ? Colors.black45 : Colors.grey);
+        }
+
+        final tileContent = Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha((0.05 * 255).toInt()),
+                blurRadius: 6,
+                offset: const Offset(0, 4),
+              )
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(icon,
+                      size: 20,
+                      color: enabled
+                          ? (isSelected ? Colors.green : Colors.black87)
+                          : Colors.grey),
+                  const SizedBox(width: 10),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontFamily: 'Objective',
+                      fontWeight: FontWeight.w600,
+                      color: enabled
+                          ? (isSelected ? Colors.green : Colors.black)
+                          : Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+              trailingIcon,
+            ],
+          ),
+        );
+
+        if (!enabled) {
+          return Opacity(
+            opacity: 0.4,
+            child: IgnorePointer(child: tileContent),
+          );
+        }
+
         return BounceTap(
           onTap: () => _showBottomSheet(title: title, options: []),
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.5),
-                  blurRadius: 6,
-                  offset: const Offset(0, 4),
-                )
-              ],
-              border: isSelected
-                  ? Border.all(
-                      color: Colors.green.withValues(alpha: 128),
-                      width: 1.5,
-                    )
-                  : null,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    if (isSelected)
-                      const Icon(Icons.check_circle, color: Colors.green, size: 18)
-                    else
-                      const SizedBox(width: 18),
-                    const SizedBox(width: 6),
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontFamily: 'Objective',
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                        color: isSelected ? Colors.green : Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
-                Icon(Icons.arrow_forward_ios_rounded, size: 18, color: isSelected ? Colors.green : Colors.black54),
-              ],
-            ),
-          ),
+          child: tileContent,
         );
       },
     );
@@ -245,11 +293,11 @@ class _DesiredServicesScreenState extends State<DesiredServicesScreen> {
                     Expanded(
                       child: ListView(
                         children: [
-                          _buildServiceTile("Perimeter Protection"),
-                          _buildServiceTile("Patrol"),
-                          _buildServiceTile("Visitor Management System"),
-                          _buildServiceTile("Intrusion Detection"),
-                          _buildServiceTile("Alarm"),
+                          _buildServiceTile("Perimeter Protection", 0, Icons.security),
+                          _buildServiceTile("Patrol", 1, Icons.directions_walk),
+                          _buildServiceTile("Visitor Management System", 2, Icons.how_to_reg),
+                          _buildServiceTile("Intrusion Detection", 3, Icons.sensors),
+                          _buildServiceTile("Alarm", 4, Icons.notifications_active),
                         ],
                       ),
                     ),

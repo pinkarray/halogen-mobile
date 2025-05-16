@@ -224,7 +224,7 @@ class HomePageState extends State<HomePage> {
                                     _horizontalSizeBox,
                                     Flexible(
                                       flex: 2,
-                                      child: Container(
+                                      child: SizedBox(
                                         width: double.infinity,
                                         child: _getPlatformButton(
                                           'Checkout',

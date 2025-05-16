@@ -6,6 +6,7 @@ import '../../shared/widgets/glowing_arrows_button.dart';
 import 'login_provider.dart';
 import '../../shared/widgets/home_wrapper.dart';
 import '../onboarding/signup/signup_screen.dart';
+import 'package:halogen/shared/helpers/session_manager.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -155,18 +156,23 @@ class LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final success = await loginProvider.login(
+    final result = await loginProvider.login(
       phoneNumber: username,
       password: password,
-      deviceId: "ddcee6bc-1445-4d8c-ba12-2c6ff0ae546d", // temp
+      deviceId: "ddcee6bc-1445-4d8c-ba12-2c6ff0ae546d", // TEMP: we will fetch this dynamically
     );
 
-    if (success && mounted) {
+    if (result.success && mounted) {
+      // ✅ Save token and profile securely
+      await SessionManager.saveAuthToken(result.token!);
+      await SessionManager.saveUserModel(result.user!);
+      await SessionManager.saveDeviceId(result.deviceId!); // if returned
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const HomeWrapper()),
       );
-    } else if (!success && mounted) {
+    } else if (!result.success && mounted) {
       Flushbar(
         message: loginProvider.errorMessage ?? 'Login failed',
         duration: const Duration(seconds: 3),
@@ -179,4 +185,5 @@ class LoginScreenState extends State<LoginScreen> {
       ).show(context);
     }
   }
+
 }
