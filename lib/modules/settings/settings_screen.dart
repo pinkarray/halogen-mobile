@@ -87,7 +87,9 @@ class SettingsScreen extends StatelessWidget {
                 const SizedBox(height: 30),
                 _sectionTitle("Account"),
                 _settingsGroup([
-                  _buildSettingTile(Icons.person_outline, "My Profile", () {}),
+                  _buildSettingTile(Icons.person_outline, "My Profile", () {
+                    Navigator.pushNamed(context, '/profile');
+                  }),
                   _buildSettingTile(Icons.account_balance_wallet_outlined, "Wallet", () {
                     Navigator.push(
                       context,

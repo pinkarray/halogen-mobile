@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-
+import '../../../models/user_model.dart';
 class SignUpProvider with ChangeNotifier {
   // User input fields
-  String fullName = '';
+  String firstName = '';
+  String lastName = '';
   String email = '';
   String password = '';
   String confirmPassword = '';
@@ -12,9 +13,17 @@ class SignUpProvider with ChangeNotifier {
   bool isLoading = false;
   String? errorMessage;
 
+  // Max sub-steps for this screen (used for calculating % of 20%)
+  final int _maxSubSteps = 7;
+
   // Update input fields
-  void updateFullName(String value) {
-    fullName = value;
+  void updateFirstName(String value) {
+    firstName = value;
+    notifyListeners();
+  }
+
+  void updateLastName(String value) {
+    lastName = value;
     notifyListeners();
   }
 
@@ -38,18 +47,29 @@ class SignUpProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Validation logic
-  bool get isFormValid {
-    return fullName.isNotEmpty &&
-        email.isNotEmpty &&
-        password.isNotEmpty &&
-        confirmPassword.isNotEmpty &&
-        password == confirmPassword &&
-        isChecked;
+  // Progress logic: return count of substeps completed (max 7)
+  int get subStepCount {
+    int step = 0;
+    if (firstName.trim().isNotEmpty) step++;
+    if (lastName.trim().isNotEmpty) step++;
+    if (email.trim().isNotEmpty) step++;
+    if (password.isNotEmpty) step++;
+    if (confirmPassword.isNotEmpty) step++;
+    if (password == confirmPassword && password.isNotEmpty) step++;
+    if (isChecked) step++;
+    return step;
   }
 
+  // Return the actual percent of this screen (0–20)
+  double get percentOfStage1 {
+    return (subStepCount / _maxSubSteps) * 20; // screen contributes up to 20%
+  }
+
+  bool get isFormValid => subStepCount == _maxSubSteps;
+
   String? validateForm() {
-    if (fullName.isEmpty ||
+    if (firstName.isEmpty ||
+        lastName.isEmpty ||
         email.isEmpty ||
         password.isEmpty ||
         confirmPassword.isEmpty) {
@@ -67,7 +87,6 @@ class SignUpProvider with ChangeNotifier {
     return null;
   }
 
-  // Call this on "Continue"
   Future<bool> submitForm() async {
     final error = validateForm();
     if (error != null) {
@@ -81,9 +100,7 @@ class SignUpProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // Placeholder for saving to backend (if needed later)
-      await Future.delayed(const Duration(milliseconds: 800)); // simulate processing
-
+      await Future.delayed(const Duration(milliseconds: 800));
       return true;
     } catch (e) {
       errorMessage = 'Something went wrong. Try again.';
@@ -92,5 +109,14 @@ class SignUpProvider with ChangeNotifier {
       isLoading = false;
       notifyListeners();
     }
+  }
+
+  UserModel toUserModel() {
+    return UserModel(
+      fullName: "$firstName $lastName",
+      email: email,
+      phoneNumber: '', // Add this if you collect it later
+      type: 'client',  // Or dynamic role logic
+    );
   }
 }

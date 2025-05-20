@@ -25,7 +25,7 @@ class GlowingArrowsButton extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
           decoration: BoxDecoration(
-            color: Colors.black,
+            color: Color(0xFF1C2B66),
             borderRadius: BorderRadius.circular(30),
           ),
           child: Row(

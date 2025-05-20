@@ -1,36 +1,86 @@
 import 'package:flutter/foundation.dart';
-
+import '../models/user_model.dart';
 class UserFormDataProvider extends ChangeNotifier {
   Map<String, dynamic> _sections = {};
 
+  // Stage flags
   bool stage2Completed = false;
   bool stage3Completed = false;
   bool isFullyRegistered = false;
+  bool isOtpVerified = false;
+  bool isChecked = false;
 
-  Map<String, dynamic> get allSections => _sections;
-
-  String? _fullName;
+  // Core onboarding info
+  String? _firstName;
+  String? _lastName;
   String? _email;
   String? _phoneNumber;
   String? _password;
   String? _confirmationId;
 
-  String? get fullName => _fullName;
+  // Exposed getters
+  String? get firstName => _firstName;
+  String? get lastName => _lastName;
   String? get email => _email;
   String? get phoneNumber => _phoneNumber;
   String? get password => _password;
   String? get confirmationId => _confirmationId;
 
-  void updateOnboardingInfo({
-    String? fullName,
-    String? email,
-    String? phoneNumber,
-    String? password,
-  }) {
-    if (fullName != null) _fullName = fullName;
-    if (email != null) _email = email;
-    if (phoneNumber != null) _phoneNumber = phoneNumber;
-    if (password != null) _password = password;
+  // Current screen step for animation/page tracking
+  int _currentSignUpStep = 1;
+  int get currentSignUpStep => _currentSignUpStep;
+
+  // % progress for stage 1 (signup flow)
+  double stage1ProgressPercent = 0.0;
+
+  // ─────────────────────────────
+  // ✅ UPDATE METHODS
+  // ─────────────────────────────
+
+  void updateFirstName(String val) {
+    _firstName = val.trim();
+    _calculateStage1Progress();
+    notifyListeners();
+  }
+
+  void updateLastName(String val) {
+    _lastName = val.trim();
+    _calculateStage1Progress();
+    notifyListeners();
+  }
+
+  void updateEmail(String val) {
+    _email = val.trim();
+    _calculateStage1Progress();
+    notifyListeners();
+  }
+
+  void updatePassword(String val) {
+    _password = val;
+    _calculateStage1Progress();
+    notifyListeners();
+  }
+
+  void updatePhone(String val) {
+    _phoneNumber = val.trim();
+    _calculateStage1Progress();
+    notifyListeners();
+  }
+
+  void toggleCheckbox(bool? value) {
+    isChecked = value ?? false;
+    _calculateStage1Progress();
+    notifyListeners();
+  }
+
+  void markOtpVerified() {
+    isOtpVerified = true;
+    _calculateStage1Progress();
+    notifyListeners();
+  }
+
+  void updateSignUpStep(int step) {
+    _currentSignUpStep = step;
     notifyListeners();
   }
 
@@ -39,28 +89,59 @@ class UserFormDataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void resetOnboardingInfo() {
-    _fullName = null;
-    _email = null;
-    _phoneNumber = null;
-    _password = null;
-    _confirmationId = null;
-    notifyListeners();
-  }
-
   void markFullyRegistered() {
     isFullyRegistered = true;
     notifyListeners();
   }
 
-  void updateSection(String sectionKey, Map<String, dynamic> values) {
-    _sections[sectionKey] = values;
+  // ─────────────────────────────
+  // ✅ STAGE 1 LOGIC
+  // ─────────────────────────────
+
+  void _calculateStage1Progress() {
+    int subSteps = 0;
+    if (_firstName?.isNotEmpty == true) subSteps++;
+    if (_lastName?.isNotEmpty == true) subSteps++;
+    if (_email?.isNotEmpty == true) subSteps++;
+    if (_password?.isNotEmpty == true) subSteps++;
+    if (_phoneNumber?.isNotEmpty == true) subSteps++;
+    if (isChecked) subSteps++;
+    if (isOtpVerified) subSteps++;
+
+    // Round to nearest 5% of 0.3 (e.g., 0.20, 0.25, 0.30)
+    double rawProgress = (subSteps / 7) * 0.3;
+    double roundedProgress = (rawProgress * 20).round() / 20; // rounds to nearest 0.05
+
+    stage1ProgressPercent = roundedProgress;
+  }
+
+  // ─────────────────────────────
+  // OTHER SHARED STRUCTURE
+  // ─────────────────────────────
+
+  Map<String, dynamic> get allSections => _sections;
+
+  void updateSection(String key, Map<String, dynamic> values) {
+    _sections[key] = values;
+    notifyListeners();
+  }
+
+  void resetOnboardingInfo() {
+    _firstName = null;
+    _lastName = null;
+    _email = null;
+    _password = null;
+    _phoneNumber = null;
+    _confirmationId = null;
+    isOtpVerified = false;
+    isChecked = false;
+    stage1ProgressPercent = 0.0;
     notifyListeners();
   }
 
   void reset() {
     _sections.clear();
-    notifyListeners();
+    resetOnboardingInfo();
   }
 
   Map<String, dynamic> toJson() => _sections;
@@ -70,70 +151,12 @@ class UserFormDataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  int getCurrentMobilityStage() {
-    return _sections['secured_mobility']?['currentStage'] ?? 1;
+  UserModel toUserModel() {
+    return UserModel(
+      fullName: "${_firstName ?? ''} ${_lastName ?? ''}",
+      email: _email ?? '',
+      phoneNumber: _phoneNumber ?? '',
+      type: 'client',
+    );
   }
-
-  int _currentSignUpStep = 1; 
-
-  int get currentSignUpStep => _currentSignUpStep;
-
-  void updateSignUpStep(int step) {
-    _currentSignUpStep = step;
-    notifyListeners();
-  }
-
-  int getCurrentOutsourcingStage() {
-    return (_sections['outsourcing_talent']?['current_stage'] ?? 1) as int;
-  }
-
-  double stage1ProgressPercent = 0.0;
-
-  void updateStage1Progress(double percent) {
-    stage1ProgressPercent = percent;
-    notifyListeners();
-  }
-
-  void calculateOutsourcingProgress() {
-    final desiredServices = allSections['outsourcing_talent']?['desired_services'] ?? {};
-
-    int completedCount = 0;
-    if (desiredServices['domestic_staff']?['completed'] == true) completedCount++;
-    if (desiredServices['business_staff']?['completed'] == true) completedCount++;
-    if (desiredServices['background_checks']?['completed'] == true) completedCount++;
-    if (desiredServices['investigation']?['completed'] == true) completedCount++;
-    if (desiredServices['lea_liaison']?['completed'] == true) completedCount++;
-
-    double newPercent = completedCount / 5;
-
-    updateStage1Progress(newPercent);
-
-    if (completedCount == 5) {
-      allSections['outsourcing_talent'] = {
-        ...allSections['outsourcing_talent'],
-        'current_stage': 2,
-      };
-      notifyListeners();
-    }
-  }
-
-  void updateMobilityStage(int newStage) {
-    if (_sections['secured_mobility'] == null) {
-      _sections['secured_mobility'] = {};
-    }
-
-    _sections['secured_mobility']['currentStage'] = newStage;
-    notifyListeners();
-  }
-
-    void markStage2Completed() {
-    stage2Completed = true;
-    notifyListeners();
-  }
-
-  void markStage3Completed() {
-    stage3Completed = true;
-    notifyListeners();
-  }
-
 }

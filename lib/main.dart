@@ -23,6 +23,9 @@ import 'modules/services/outsourcing_talent/desired_services/desired_services_sc
 import 'modules/services/outsourcing_talent/outsourcing_talent_screen.dart';
 import 'modules/services/outsourcing_talent/description_of_need_screen.dart';
 import 'modules/services/outsourcing_talent/confirmation_screen.dart';
+import 'modules/settings/settings_routes.dart';
+import 'modules/settings/profile/profile_provider.dart';
+
 final _paystackPlugin = PaystackPlugin();
 PaystackPlugin get paystackPlugin => _paystackPlugin;
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -43,6 +46,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => OutsourcingTalentProvider()),
         ChangeNotifierProvider(create: (_) => DigitalSecurityProvider()),
         ChangeNotifierProvider(create: (_) => WalletProvider()),
+        ChangeNotifierProvider(create: (_) => ProfileProvider()),
       ],
       child: const HalogenApp(),
     ),
@@ -171,6 +175,7 @@ class HalogenApp extends StatelessWidget {
             (context) => const DescriptionOfNeedScreen(),
         '/outsourcing-talent/confirmation':
             (context) => const ConfirmationScreen(),
+        ...settingsRoutes,
       },
     );
   }

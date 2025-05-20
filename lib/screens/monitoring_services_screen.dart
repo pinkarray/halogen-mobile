@@ -168,12 +168,9 @@ class MonitoringServicesScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           backgroundColor: Colors.transparent,
           elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Color(0xFF1C2B66)),
-            onPressed: () => Navigator.pop(context),
-          ),
           title: const Text(
             "Monitoring Services",
             style: TextStyle(

@@ -139,8 +139,7 @@ class OTPVerificationScreenState extends State<OTPVerificationScreen> {
               children: [
                 CustomProgressBar(
                   currentStep: 1,
-                  subStep: 3,
-                  maxSubStepsPerStep: 3,
+                  percent: context.watch<UserFormDataProvider>().stage1ProgressPercent,
                 ).animate().fade(duration: 600.ms),
 
                 const SizedBox(height: 20),
@@ -291,8 +290,16 @@ class OTPVerificationScreenState extends State<OTPVerificationScreen> {
                                   );
 
                                   if (!mounted) return;
-
+                                  provider.markOtpVerified();
                                   provider.saveConfirmationId(response['confirmation_id']);
+
+                                  final userModel = provider.toUserModel();
+
+                                  // (Optional) Save to secure/session storage
+                                  // await SessionManager.saveUserProfile(userModel.toJson());
+
+                                  // Log or use for debug
+                                  debugPrint('✅ UserModel created: ${userModel.toJson()}');
                                   if (!mounted) return;
 
                                   Navigator.push(

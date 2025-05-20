@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../services/auth_service.dart';
 import '../../../providers/user_form_data_provider.dart';
@@ -7,6 +6,7 @@ import '../otp_verification/otp_verification_screen.dart';
 import '../../../shared/widgets/custom_progress_bar.dart';
 import '../../../shared/widgets/halogen_back_button.dart';
 import '../../../shared/widgets/glowing_arrows.dart';
+import '../../../shared/widgets/underlined_glow_phone_field.dart';
 
 class PhoneVerificationScreen extends StatefulWidget {
   const PhoneVerificationScreen({super.key});
@@ -23,7 +23,19 @@ class PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<UserFormDataProvider>().updateSignUpStep(2);
+
+    final provider = context.read<UserFormDataProvider>();
+    provider.updateSignUpStep(2);
+
+    if ((provider.phoneNumber ?? "").isEmpty) {
+      provider.updatePhone("");
+    }
+
+    _phoneController.addListener(() {
+      final fullPhone = '$selectedCountryCode${_phoneController.text.trim()}';
+      provider.updatePhone(fullPhone);
+      setState(() {}); 
+    });
   }
 
   @override
@@ -57,8 +69,7 @@ class PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
               children: [
                 CustomProgressBar(
                   currentStep: 1,
-                  subStep: 2,
-                  maxSubStepsPerStep: 3,
+                  percent: provider.stage1ProgressPercent, // this returns 0.20 to ~0.25
                 ),
 
                 const SizedBox(height: 20),
@@ -69,7 +80,7 @@ class PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
                     fontFamily: 'Objective',
-                    color: Colors.black,
+                    color: Color(0xFF1C2B66),
                   ),
                 ),
                 const SizedBox(height: 5),
@@ -77,73 +88,18 @@ class PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                   "Input your active number to get OTP",
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.grey,
+                    color: Color(0xFF1C2B66),
                     fontFamily: 'Objective',
                   ),
                 ),
                 const SizedBox(height: 20),
 
-                Row(
-                  children: [
-                    Container(
-                      width: 110,
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFF1C2B66)),
-                      ),
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        value: selectedCountryCode,
-                        underline: const SizedBox(),
-                        items: ["+234", "+1", "+44", "+91"]
-                            .map((String code) => DropdownMenuItem(
-                                  value: code,
-                                  child: Text(
-                                    code,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontFamily: 'Objective',
-                                      color: Color(0xFF1C2B66),
-                                    ),
-                                  ),
-                                ))
-                            .toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedCountryCode = value!;
-                          });
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: TextField(
-                        controller: _phoneController,
-                        keyboardType: TextInputType.phone,
-                        inputFormatters: [FilteringTextInputFormatter.digitsOnly], // ✅ restrict to digits
-                        cursorColor: const Color(0xFF1C2B66),
-                        decoration: InputDecoration(
-                          hintText: "8156435467",
-                          filled: true,
-                          fillColor: Colors.grey[200],
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: Color(0xFF1C2B66)),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: Color(0xFF1C2B66)),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: Color(0xFF1C2B66), width: 2),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                UnderlinedGlowPhoneField(
+                  selectedCountryCode: selectedCountryCode,
+                  onCountryCodeChanged: (val) => setState(() {
+                    selectedCountryCode = val ?? "+234";
+                  }),
+                  phoneController: _phoneController,
                 ),
 
                 const SizedBox(height: 30),
@@ -165,7 +121,8 @@ class PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                                   return;
                                 }
 
-                                if (selectedCountryCode == '+234' && _phoneController.text.trim().length != 10) {
+                                if (selectedCountryCode == '+234' &&
+                                    _phoneController.text.trim().length != 10) {
                                   FocusScope.of(context).unfocus();
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(content: Text('Nigerian phone numbers must be 10 digits')),
@@ -173,18 +130,15 @@ class PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                                   return;
                                 }
 
-                                setState(() {
-                                  _isLoading = true;
-                                });
+                                setState(() => _isLoading = true);
 
                                 try {
-                                  final fullPhoneNumber = '$selectedCountryCode${_phoneController.text.trim()}';
+                                  final fullPhoneNumber =
+                                      '$selectedCountryCode${_phoneController.text.trim()}';
 
-                                  // ✅ Send OTP
                                   final result = await sendOtp(phoneNumber: fullPhoneNumber);
 
-                                  // ✅ Save phone + confirmationId to Provider
-                                  provider.updateOnboardingInfo(phoneNumber: fullPhoneNumber);
+                                  provider.updatePhone(fullPhoneNumber);
                                   if (result.containsKey("confirmation_id")) {
                                     provider.saveConfirmationId(result["confirmation_id"]);
                                   }
@@ -196,9 +150,8 @@ class PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                                     PageRouteBuilder(
                                       transitionDuration: const Duration(milliseconds: 900),
                                       pageBuilder: (_, __, ___) => const OTPVerificationScreen(),
-                                      transitionsBuilder: (_, animation, __, child) {
-                                        return FadeTransition(opacity: animation, child: child);
-                                      },
+                                      transitionsBuilder: (_, animation, __, child) =>
+                                          FadeTransition(opacity: animation, child: child),
                                     ),
                                   );
                                 } catch (e) {
@@ -208,15 +161,13 @@ class PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                                   );
                                 } finally {
                                   if (mounted) {
-                                    setState(() {
-                                      _isLoading = false;
-                                    });
+                                    setState(() => _isLoading = false);
                                   }
                                 }
                               },
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 15),
-                          backgroundColor: Colors.black,
+                          backgroundColor: Color(0xFF1C2B66),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
                           ),

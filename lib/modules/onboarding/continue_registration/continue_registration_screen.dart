@@ -47,8 +47,7 @@ class ContinueRegistrationScreen extends StatelessWidget {
           children: [
             CustomProgressBar(
               currentStep: 2,
-              subStep: completedSections.length,
-              maxSubStepsPerStep: sectionTitles.length,
+              percent: completedSections.length / sectionTitles.length,
             ),
 
             const SizedBox(height: 16),

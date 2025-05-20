@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import '../../../shared/widgets/physical_security_progress_bar.dart';
 import '../../../shared/widgets/halogen_back_button.dart';
 import '../../../shared/widgets/glowing_arrows_button.dart';
+import '../../../shared/widgets/underlined_glow_custom_date_picker.dart';
+import '../../../shared/widgets/underlined_glow_custom_time_picker.dart';
+import '../../../shared/widgets/underlined_glow_input_field.dart';
 import '../../../shared/widgets/bounce_tap.dart';
 import 'location_confirmation_screen.dart';
 import 'desired_services_screen.dart';
@@ -49,20 +52,24 @@ class _PhysicalSecurityScreenState extends State<PhysicalSecurityScreen> {
     if (currentStep > 6) currentStep = 6;
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.white, Color(0xFFFFFAEA)],
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Colors.white, Color(0xFFFFFAEA)],
+              ),
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+          // 🧱 ACTUAL CONTENT OVERLAY
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                 Row(
                   children: [
                     const HalogenBackButton(),
@@ -83,27 +90,79 @@ class _PhysicalSecurityScreenState extends State<PhysicalSecurityScreen> {
                 const SizedBox(height: 20),
                 PhysicalSecurityProgressBar(currentStep: currentStep, progressContext: 'site'),
                 const SizedBox(height: 24),
-                const Text("Site Inspection", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'Objective')),
+                const Text("Site Inspection", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'Objective', color: Color(0xFF1C2B66),)),
                 const SizedBox(height: 4),
-                const Text("Pick a date and time convenient for you", style: TextStyle(fontSize: 13, color: Colors.grey)),
+                const Text("Pick a date and time convenient for you", style: TextStyle(fontSize: 13, color: Color(0xFF1C2B66))),
                 const SizedBox(height: 16),
                 Form(
                   key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildLabeled("Preferred Date", _buildDatePicker(context, provider)),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: UnderlinedGlowCustomDatePickerField(
+                              label: 'Preferred Date',
+                              selectedDate: provider.preferredDate,
+                              onConfirm: (date) => provider.updateInspectionData(date: date),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: UnderlinedGlowCustomTimePickerField(
+                              label: 'Preferred Time',
+                              selectedTime: provider.preferredTime,
+                              onConfirm: (time) => provider.updateInspectionData(time: time),
+                            ),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 12),
-                      _buildLabeled("Preferred Time", _buildTimePicker(context, provider)),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: UnderlinedGlowInputField(
+                              label: 'House Number',
+                              controller: houseNumberController,
+                              icon: Icons.home,
+                              onChanged: (val) => provider.updateInspectionData(houseNum: val.trim()),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: UnderlinedGlowInputField(
+                              label: 'Street Name',
+                              controller: streetNameController,
+                              icon: Icons.map_outlined,
+                              onChanged: (val) => provider.updateInspectionData(street: val.trim()),
+                            ),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 12),
-                      _buildLabeled("House Number", _buildTextField(houseNumberController, 'houseNumber')),
-                      const SizedBox(height: 12),
-                      _buildLabeled("Street Name", _buildTextField(streetNameController, 'streetName')),
-                      const SizedBox(height: 12),
-                      _buildLabeled("Area", _buildTextField(areaController, 'area')),
-                      const SizedBox(height: 12),
-                      _buildLabeled("State", _buildTextField(stateController, 'state')),
-                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: UnderlinedGlowInputField(
+                              label: 'Area',
+                              controller: areaController,
+                              icon: Icons.location_city,
+                              onChanged: (val) => provider.updateInspectionData(areaText: val.trim()),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: UnderlinedGlowInputField(
+                              label: 'State',
+                              controller: stateController,
+                              icon: Icons.public,
+                              onChanged: (val) => provider.updateInspectionData(stateText: val.trim()),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
                       BounceTap(
                         onTap: () async {
                           final confirmed = await Navigator.push(
@@ -151,113 +210,7 @@ class _PhysicalSecurityScreenState extends State<PhysicalSecurityScreen> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildLabeled(String label, Widget field) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            fontFamily: 'Objective',
-          ),
-        ),
-        const SizedBox(height: 6),
-        field,
-      ],
-    );
-  }
-
-  Widget _buildTextField(TextEditingController controller, String fieldKey) {
-    return TextFormField(
-      controller: controller,
-      onChanged: (value) {
-        final provider = context.read<PhysicalSecurityProvider>();
-        switch (fieldKey) {
-          case 'houseNumber':
-            provider.updateInspectionData(houseNum: value.trim());
-            break;
-          case 'streetName':
-            provider.updateInspectionData(street: value.trim());
-            break;
-          case 'area':
-            provider.updateInspectionData(areaText: value.trim());
-            break;
-          case 'state':
-            provider.updateInspectionData(stateText: value.trim());
-            break;
-        }
-      },
-      decoration: InputDecoration(
-        hintText: 'Input here',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      ),
-    );
-  }
-
-  Widget _buildDatePicker(BuildContext context, PhysicalSecurityProvider provider) {
-    return GestureDetector(
-      onTap: () async {
-        final picked = await showDatePicker(
-          context: context,
-          initialDate: DateTime.now(),
-          firstDate: DateTime.now(),
-          lastDate: DateTime(2100),
-        );
-        if (picked != null) {
-          provider.updateInspectionData(date: picked);
-        }
-      },
-      child: AbsorbPointer(
-        child: TextFormField(
-          decoration: InputDecoration(
-            hintText: provider.preferredDate == null
-                ? 'Pick your preferred date'
-                : '${provider.preferredDate!.day}/${provider.preferredDate!.month}/${provider.preferredDate!.year}',
-            suffixIcon: const Icon(Icons.calendar_today_outlined),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTimePicker(BuildContext context, PhysicalSecurityProvider provider) {
-    return GestureDetector(
-      onTap: () async {
-        final picked = await showTimePicker(
-          context: context,
-          initialTime: TimeOfDay.now(),
-        );
-        if (picked != null) {
-          provider.updateInspectionData(time: picked);
-        }
-      },
-      child: AbsorbPointer(
-        child: TextFormField(
-          decoration: InputDecoration(
-            hintText: provider.preferredTime == null
-                ? 'Pick your preferred time'
-                : provider.preferredTime!.format(context),
-            suffixIcon: const Icon(Icons.access_time_outlined),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          ),
-        ),
-      ),
+      ]),
     );
   }
 }

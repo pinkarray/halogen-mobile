@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
+import '../../../shared/widgets/underlined_glow_input_field.dart';
+import '../../../shared/widgets/underlined_glow_password_field.dart';
 import '../../../shared/widgets/custom_progress_bar.dart';
+import '../../../providers/user_form_data_provider.dart';
 import '../../../shared/widgets/glowing_arrows.dart';
 import '../../../shared/widgets/halogen_back_button.dart';
 import '../../../shared/widgets/shake_widget.dart';
@@ -16,20 +18,21 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class SignUpScreenState extends State<SignUpScreen> {
-  final GlobalKey<ShakeWidgetState> _passwordFieldKey = GlobalKey<ShakeWidgetState>();
-  final GlobalKey<ShakeWidgetState> _confirmPasswordFieldKey = GlobalKey<ShakeWidgetState>();
-
-  final TextEditingController fullNameController = TextEditingController();
+  final GlobalKey<ShakeWidgetState> _passwordFieldKey =
+      GlobalKey<ShakeWidgetState>();
+  final GlobalKey<ShakeWidgetState> _confirmPasswordFieldKey =
+      GlobalKey<ShakeWidgetState>();
+  final TextEditingController firstNameController = TextEditingController();
+  final TextEditingController lastNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
-
-  bool _obscurePassword = true;
-  bool _obscureConfirmPassword = true;
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     final signUpProvider = context.watch<SignUpProvider>();
+    final userFormProvider = context.read<UserFormDataProvider>();
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -52,49 +55,83 @@ class SignUpScreenState extends State<SignUpScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const CustomProgressBar(currentStep: 1, subStep: 1, maxSubStepsPerStep: 3),
+                CustomProgressBar(
+                  currentStep: 1,
+                  percent: signUpProvider.percentOfStage1 / 100,
+                ),
                 const SizedBox(height: 20),
                 const Text(
                   "Let's get you started",
-                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, fontFamily: 'Objective'),
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Objective',
+                    color: Color(0xFF1C2B66),
+                  ),
                 ),
                 const Text(
                   'Join Halogen and experience seamless security',
-                  style: TextStyle(fontSize: 16, color: Colors.grey, fontFamily: 'Objective'),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Color(0xFF1C2B66),
+                    fontFamily: 'Objective',
+                  ),
                 ),
                 const SizedBox(height: 20),
 
-                _buildTextField(
-                  hint: "Full name",
-                  controller: fullNameController,
-                  onChanged: signUpProvider.updateFullName,
+                UnderlinedGlowInputField(
+                  label: 'First Name',
+                  controller: firstNameController,
+                  icon: Icons.person,
+                    onChanged: (val) {
+                      signUpProvider.updateFirstName(val);
+                      userFormProvider.updateFirstName(val);
+                    },
                 ),
-                _buildTextField(
-                  hint: "Email Address",
+                const SizedBox(height: 12),
+
+                UnderlinedGlowInputField(
+                  label: 'Last Name',
+                  controller: lastNameController,
+                  icon: Icons.person_outline,
+                  onChanged: (val) {
+                    signUpProvider.updateLastName(val);
+                    userFormProvider.updateLastName(val);
+                  },
+                ),
+                const SizedBox(height: 12),
+
+                UnderlinedGlowInputField(
+                  label: 'Email Address',
                   controller: emailController,
-                  onChanged: signUpProvider.updateEmail,
-                ),
-                _buildTextField(
-                  hint: "Password",
-                  controller: passwordController,
-                  obscureText: true,
-                  obscureToggleValue: _obscurePassword,
-                  onToggle: () {
-                    setState(() => _obscurePassword = !_obscurePassword);
+                  icon: Icons.email_outlined,
+                  onChanged: (val) {
+                    signUpProvider.updateEmail(val);
+                    userFormProvider.updateEmail(val);
                   },
-                  onChanged: signUpProvider.updatePassword,
+                ),
+                const SizedBox(height: 12),
+
+                ShakeWidget(
                   key: _passwordFieldKey,
+                  child: UnderlinedGlowPasswordField(
+                    label: 'Password',
+                    controller: passwordController,
+                    icon: Icons.lock,
+                    onChanged: (val) {
+                      signUpProvider.updatePassword(val);
+                      userFormProvider.updatePassword(val);
+                    },
+                  ),
                 ),
-                _buildTextField(
-                  hint: "Confirm Password",
-                  controller: confirmPasswordController,
-                  obscureText: true,
-                  obscureToggleValue: _obscureConfirmPassword,
-                  onToggle: () {
-                    setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
-                  },
-                  onChanged: signUpProvider.updateConfirmPassword,
+                ShakeWidget(
                   key: _confirmPasswordFieldKey,
+                  child: UnderlinedGlowPasswordField(
+                    label: 'Confirm Password',
+                    controller: confirmPasswordController,
+                    icon: Icons.lock_outline,
+                    onChanged: signUpProvider.updateConfirmPassword,
+                  ),
                 ),
 
                 const SizedBox(height: 10),
@@ -104,7 +141,7 @@ class SignUpScreenState extends State<SignUpScreen> {
                   children: [
                     Checkbox(
                       value: signUpProvider.isChecked,
-                      activeColor: Colors.black,
+                      activeColor: Color(0xFF1C2B66),
                       onChanged: signUpProvider.toggleCheckbox,
                     ),
                     Expanded(
@@ -115,9 +152,15 @@ class SignUpScreenState extends State<SignUpScreen> {
                             text: 'By registering, you accept our ',
                             style: const TextStyle(fontFamily: 'Objective'),
                             children: const [
-                              TextSpan(text: 'Terms of Use', style: TextStyle(fontWeight: FontWeight.bold)),
+                              TextSpan(
+                                text: 'Terms of Use',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
                               TextSpan(text: ' and '),
-                              TextSpan(text: 'Privacy Policy', style: TextStyle(fontWeight: FontWeight.bold)),
+                              TextSpan(
+                                text: 'Privacy Policy',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
                             ],
                           ),
                         ),
@@ -143,108 +186,80 @@ class SignUpScreenState extends State<SignUpScreen> {
                     child: SizedBox(
                       width: 200,
                       child: ElevatedButton(
-                        onPressed: signUpProvider.isChecked && !signUpProvider.isLoading
-                            ? () async {
-                                final success = await signUpProvider.submitForm();
-                                if (success && mounted) {
-                                  Navigator.push(
-                                    context,
-                                    PageRouteBuilder(
-                                      transitionDuration: const Duration(milliseconds: 900),
-                                      pageBuilder: (_, __, ___) => const PhoneVerificationScreen(),
-                                      transitionsBuilder: (_, animation, __, child) =>
-                                          FadeTransition(opacity: animation, child: child),
-                                    ),
-                                  );
-                                } else {
-                                  // animate shake only when passwords mismatch
-                                  if (signUpProvider.password != signUpProvider.confirmPassword) {
-                                    _passwordFieldKey.currentState?.shake();
-                                    _confirmPasswordFieldKey.currentState?.shake();
+                        onPressed:
+                            signUpProvider.isChecked &&
+                                    !signUpProvider.isLoading
+                                ? () async {
+                                  final success =
+                                      await signUpProvider.submitForm();
+                                  if (success && mounted) {
+                                              userFormProvider.updateFirstName(signUpProvider.firstName);
+                                    userFormProvider.updateLastName(signUpProvider.lastName);
+                                    userFormProvider.updateEmail(signUpProvider.email);
+                                    userFormProvider.updatePassword(signUpProvider.password);
+                                    userFormProvider.toggleCheckbox(signUpProvider.isChecked);
+                                    Navigator.push(
+                                      context,
+                                      PageRouteBuilder(
+                                        transitionDuration: const Duration(
+                                          milliseconds: 900,
+                                        ),
+                                        pageBuilder:
+                                            (_, __, ___) =>
+                                                const PhoneVerificationScreen(),
+                                        transitionsBuilder:
+                                            (_, animation, __, child) =>
+                                                FadeTransition(
+                                                  opacity: animation,
+                                                  child: child,
+                                                ),
+                                      ),
+                                    );
+                                  } else {
+                                    if (signUpProvider.password !=
+                                        signUpProvider.confirmPassword) {
+                                      _passwordFieldKey.currentState?.shake();
+                                      _confirmPasswordFieldKey.currentState
+                                          ?.shake();
+                                    }
                                   }
                                 }
-                              }
-                            : null,
+                                : null,
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           backgroundColor:
-                              signUpProvider.isChecked ? Colors.black : Colors.grey[300],
+                              signUpProvider.isChecked
+                                  ? Color(0xFF1C2B66)
+                                  : Colors.grey[300],
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
                           ),
                         ),
-                        child: signUpProvider.isLoading
-                            ? const CircularProgressIndicator(color: Colors.white)
-                            : Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
-                                  Text(
-                                    'Continue',
-                                    style: TextStyle(fontSize: 16, color: Colors.white, fontFamily: 'Objective'),
-                                  ),
-                                  SizedBox(width: 10),
-                                  GlowingArrows(),
-                                ],
-                              ),
+                        child:
+                            signUpProvider.isLoading
+                                ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                                : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Text(
+                                      'Continue',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.white,
+                                        fontFamily: 'Objective',
+                                      ),
+                                    ),
+                                    SizedBox(width: 10),
+                                    GlowingArrows(),
+                                  ],
+                                ),
                       ),
                     ),
                   ),
                 ),
               ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required String hint,
-    required TextEditingController controller,
-    required ValueChanged<String> onChanged,
-    bool obscureText = false,
-    bool? obscureToggleValue,
-    VoidCallback? onToggle,
-    Key? key,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: ShakeWidget(
-        key: key,
-        child: TextField(
-          controller: controller,
-          onChanged: onChanged,
-          obscureText: obscureToggleValue ?? false,
-          cursorColor: const Color(0xFF1C2B66),
-          decoration: InputDecoration(
-            hintText: hint,
-            filled: true,
-            fillColor: Colors.white,
-            suffixIcon: obscureText
-                ? IconButton(
-                    onPressed: onToggle,
-                    icon: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
-                      child: Icon(
-                        obscureToggleValue! ? Icons.visibility_off : Icons.visibility,
-                        key: ValueKey(obscureToggleValue),
-                        color: Colors.grey,
-                      ),
-                    ),
-                  )
-                : null,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFF1C2B66)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFF1C2B66)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFF1C2B66), width: 2),
             ),
           ),
         ),

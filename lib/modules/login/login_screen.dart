@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:another_flushbar/flushbar.dart';
 import '../../shared/widgets/glowing_arrows_button.dart';
 import 'login_provider.dart';
+import '../../shared/widgets/underlined_glow_input_field.dart';
+import '../../shared/widgets/underlined_glow_password_field.dart';
 import '../../shared/widgets/home_wrapper.dart';
 import '../onboarding/signup/signup_screen.dart';
 import 'package:halogen/shared/helpers/session_manager.dart';
@@ -18,7 +20,6 @@ class LoginScreen extends StatefulWidget {
 class LoginScreenState extends State<LoginScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  bool _isPasswordVisible = false;
 
   @override
   void initState() {
@@ -65,46 +66,21 @@ class LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 40),
 
-                  TextField(
+                  UnderlinedGlowInputField(
+                    label: 'Username or Phone Number',
                     controller: _usernameController,
-                    decoration: InputDecoration(
-                      labelText: 'Username or Phone Number',
-                      prefixIcon: const Icon(Icons.person, color: Colors.black),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                    ),
+                    icon: Icons.person,
+                    onChanged: (_) => setState(() {}),
                   ).animate().slideX(begin: -1, end: 0).fade(duration: 600.ms),
 
                   const SizedBox(height: 20),
 
-                  TextField(
+                  UnderlinedGlowPasswordField(
+                    label: 'Password',
                     controller: _passwordController,
-                    obscureText: !_isPasswordVisible,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      prefixIcon: const Icon(Icons.lock, color: Colors.black),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                          color: Colors.black,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _isPasswordVisible = !_isPasswordVisible;
-                          });
-                        },
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                    ),
+                    icon: Icons.lock,
+                    onChanged: (_) => setState(() {}),
                   ).animate().slideX(begin: 1, end: 0).fade(duration: 600.ms),
-
                   const SizedBox(height: 30),
 
                   GlowingArrowsButton(
