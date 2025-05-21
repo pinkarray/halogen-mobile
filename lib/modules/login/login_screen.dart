@@ -9,6 +9,9 @@ import '../../shared/widgets/underlined_glow_password_field.dart';
 import '../../shared/widgets/home_wrapper.dart';
 import '../onboarding/signup/signup_screen.dart';
 import 'package:halogen/shared/helpers/session_manager.dart';
+import 'package:halogen/utils/string_utils.dart'; 
+import '../../models/user_model.dart';
+import 'package:local_auth/local_auth.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,17 +23,136 @@ class LoginScreen extends StatefulWidget {
 class LoginScreenState extends State<LoginScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final LocalAuthentication auth = LocalAuthentication();
+
+  String? savedUsername;
+  String? savedPassword;
 
   @override
   void initState() {
     super.initState();
     _usernameController.addListener(() => setState(() {}));
     _passwordController.addListener(() => setState(() {}));
+    _attemptBiometricLogin();
   }
 
   bool get _isFormComplete =>
       _usernameController.text.trim().isNotEmpty &&
       _passwordController.text.trim().isNotEmpty;
+
+    Future<void> _attemptBiometricLogin() async {
+    // 🔐 Load saved credentials
+      savedUsername = await SessionManager.getSavedUsername();
+      savedPassword = await SessionManager.getSavedPassword();
+
+      if (savedUsername != null && savedPassword != null) {
+        try {
+          bool canCheck = await auth.canCheckBiometrics;
+          bool supported = await auth.isDeviceSupported();
+          List<BiometricType> biometrics = await auth.getAvailableBiometrics();
+
+          if (canCheck && supported && biometrics.isNotEmpty) {
+            bool authenticated = await auth.authenticate(
+              localizedReason: 'Please authenticate to log in',
+              options: const AuthenticationOptions(
+                biometricOnly: true,
+                stickyAuth: true,
+              ),
+            );
+
+            if (authenticated && mounted) {
+              await _loginWithSavedCredentials(); // 👇
+            }
+          }
+        } catch (e) {
+          _showFlushbar("Biometric login failed: ${e.toString()}");
+        }
+      }
+    }
+
+    Future<void> _loginWithSavedCredentials() async {
+      final loginProvider = Provider.of<LoginProvider>(context, listen: false);
+
+      final result = await loginProvider.login(
+        phoneNumber: savedUsername!,
+        password: savedPassword!,
+        deviceId: "ddcee6bc-1445-4d8c-ba12-2c6ff0ae546d",
+      );
+
+      if (result.success && mounted) {
+        final cleanedUser = UserModel(
+          fullName: capitalizeEachWord(result.user!.fullName.trim()),
+          email: result.user!.email.trim().toLowerCase(),
+          phoneNumber: result.user!.phoneNumber.trim(),
+          type: result.user!.type,
+        );
+
+        await SessionManager.saveAuthToken(result.token!);
+        await SessionManager.saveDeviceId(result.deviceId!);
+        await SessionManager.saveUserModel(cleanedUser);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeWrapper()),
+        );
+      } else {
+        _showFlushbar(loginProvider.errorMessage ?? 'Biometric login failed');
+      }
+    }
+
+    void _showFlushbar(String message) {
+      Flushbar(
+        message: message,
+        duration: const Duration(seconds: 3),
+        flushbarPosition: FlushbarPosition.TOP,
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        borderRadius: BorderRadius.circular(12),
+        backgroundColor: Colors.red.shade600,
+        icon: const Icon(Icons.error_outline, color: Colors.white),
+        messageColor: Colors.white,
+      ).show(context);
+    }
+
+    Future<void> _handleLogin() async {
+      final loginProvider = Provider.of<LoginProvider>(context, listen: false);
+      final username = _usernameController.text.trim();
+      final password = _passwordController.text.trim();
+
+      if (username.isEmpty || password.isEmpty) {
+        _showFlushbar('Please fill in both fields');
+        return;
+      }
+
+      final result = await loginProvider.login(
+        phoneNumber: username,
+        password: password,
+        deviceId: "ddcee6bc-1445-4d8c-ba12-2c6ff0ae546d",
+      );
+
+      if (result.success && mounted) {
+        final cleanedUser = UserModel(
+          fullName: capitalizeEachWord(result.user!.fullName.trim()),
+          email: result.user!.email.trim().toLowerCase(),
+          phoneNumber: result.user!.phoneNumber.trim(),
+          type: result.user!.type,
+        );
+
+        await SessionManager.saveAuthToken(result.token!);
+        await SessionManager.saveDeviceId(result.deviceId!);
+        await SessionManager.saveUserModel(cleanedUser);
+
+        // 🧠 Save credentials for biometric login
+        await SessionManager.saveUsername(username);
+        await SessionManager.savePassword(password);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeWrapper()),
+        );
+      } else {
+        _showFlushbar(loginProvider.errorMessage ?? 'Login failed');
+      }
+    }
 
   @override
   Widget build(BuildContext context) {
@@ -112,54 +234,4 @@ class LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-
-  Future<void> _handleLogin() async {
-    final loginProvider = Provider.of<LoginProvider>(context, listen: false);
-    final username = _usernameController.text.trim();
-    final password = _passwordController.text.trim();
-
-    if (username.isEmpty || password.isEmpty) {
-      Flushbar(
-        message: 'Please fill in both fields',
-        duration: const Duration(seconds: 3),
-        flushbarPosition: FlushbarPosition.TOP,
-        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        borderRadius: BorderRadius.circular(12),
-        backgroundColor: Colors.red.shade600,
-        icon: const Icon(Icons.warning_amber_rounded, color: Colors.white),
-        messageColor: Colors.white,
-      ).show(context);
-      return;
-    }
-
-    final result = await loginProvider.login(
-      phoneNumber: username,
-      password: password,
-      deviceId: "ddcee6bc-1445-4d8c-ba12-2c6ff0ae546d", // TEMP: we will fetch this dynamically
-    );
-
-    if (result.success && mounted) {
-      // ✅ Save token and profile securely
-      await SessionManager.saveAuthToken(result.token!);
-      await SessionManager.saveUserModel(result.user!);
-      await SessionManager.saveDeviceId(result.deviceId!); // if returned
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeWrapper()),
-      );
-    } else if (!result.success && mounted) {
-      Flushbar(
-        message: loginProvider.errorMessage ?? 'Login failed',
-        duration: const Duration(seconds: 3),
-        flushbarPosition: FlushbarPosition.TOP,
-        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        borderRadius: BorderRadius.circular(12),
-        backgroundColor: Colors.red.shade600,
-        icon: const Icon(Icons.error_outline, color: Colors.white),
-        messageColor: Colors.white,
-      ).show(context);
-    }
-  }
-
 }

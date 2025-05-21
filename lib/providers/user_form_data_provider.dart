@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/user_model.dart';
+import 'package:halogen/utils/string_utils.dart';
+
 class UserFormDataProvider extends ChangeNotifier {
   Map<String, dynamic> _sections = {};
 
@@ -152,10 +154,13 @@ class UserFormDataProvider extends ChangeNotifier {
   }
 
   UserModel toUserModel() {
+    final rawFullName = "${_firstName?.trim() ?? ''} ${_lastName?.trim() ?? ''}";
+    final formattedName = capitalizeEachWord(rawFullName);
+
     return UserModel(
-      fullName: "${_firstName ?? ''} ${_lastName ?? ''}",
-      email: _email ?? '',
-      phoneNumber: _phoneNumber ?? '',
+      fullName: formattedName,
+      email: _email?.trim() ?? '',
+      phoneNumber: _phoneNumber?.trim() ?? '',
       type: 'client',
     );
   }

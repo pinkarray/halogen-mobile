@@ -16,12 +16,12 @@ class ContinueRegistrationPrompt extends StatelessWidget {
       children: [
         const Text(
           "Please complete your registration to view personalized recommendations.",
-          textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 16,
-            color: Colors.black87,
-            fontFamily: 'Objective',
-          ),
+          fontSize: 14,
+          color: Colors.black,
+          fontFamily: 'Objective',
+            ),
+              textAlign: TextAlign.left,
         ),
         const SizedBox(height: 16),
         GlowingArrowsButton(

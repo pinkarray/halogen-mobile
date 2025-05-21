@@ -1,9 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../wallet/wallet_check_wrapper.dart';
+import 'package:halogen/shared/helpers/session_manager.dart';
+import 'package:halogen/models/user_model.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  UserModel? _user;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    final user = await SessionManager.getUserModel();
+    if (!mounted) return;
+    setState(() {
+      _user = user;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,20 +82,20 @@ class SettingsScreen extends StatelessWidget {
                       const SizedBox(width: 16),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
-                            "Lewis Jane",
-                            style: TextStyle(
+                            _user?.fullName ?? "Loading...",
+                            style: const TextStyle(
                               fontFamily: 'Objective',
                               fontWeight: FontWeight.bold,
                               fontSize: 18,
                               color: Color(0xFF1C2B66),
                             ),
                           ),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           Text(
-                            "Lewis.Jane@gmail.com",
-                            style: TextStyle(
+                            _user?.email ?? "",
+                            style: const TextStyle(
                               fontFamily: 'Objective',
                               fontSize: 14,
                               color: Colors.grey,

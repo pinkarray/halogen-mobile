@@ -1,17 +1,47 @@
 import 'package:flutter/material.dart';
+import 'package:halogen/shared/helpers/session_manager.dart';
 
-class GreetingHeader extends StatelessWidget {
-  final String greetingText;
-  final String subtitle;
 
-  const GreetingHeader({
-    super.key,
-    this.greetingText = "Good morning",
-    this.subtitle = "Your security is in check",
-  });
+class GreetingHeader extends StatefulWidget {
+  const GreetingHeader({super.key});
+
+  @override
+  State<GreetingHeader> createState() => _GreetingHeaderState();
+}
+
+class _GreetingHeaderState extends State<GreetingHeader> {
+  String? firstName;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    final user = await SessionManager.getUserModel();
+    if (!mounted) return;
+
+    setState(() {
+      firstName = user?.fullName.split(" ").first ?? "there";
+      isLoading = false;
+    });
+  }
+
+  String getTimeBasedGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return "Good Morning";
+    if (hour < 17) return "Good Afternoon";
+    return "Good Evening";
+  }
 
   @override
   Widget build(BuildContext context) {
+    final greeting = isLoading
+        ? "Welcome"
+        : "${getTimeBasedGreeting()}, $firstName";
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -19,16 +49,16 @@ class GreetingHeader extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              greetingText,
+              greeting,
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
                 fontFamily: 'Objective',
               ),
             ),
-            Text(
-              subtitle,
-              style: const TextStyle(
+            const Text(
+              "Your security is in check",
+              style: TextStyle(
                 fontSize: 14,
                 color: Colors.blueGrey,
                 fontFamily: 'Objective',
@@ -54,7 +84,7 @@ class GreetingHeader extends StatelessWidget {
               ],
             ),
           ],
-        )
+        ),
       ],
     );
   }

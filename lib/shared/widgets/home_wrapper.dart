@@ -93,7 +93,7 @@ class _HomeWrapperState extends State<HomeWrapper> with TickerProviderStateMixin
         selectedFontSize: 12,
         unselectedFontSize: 12,
         selectedItemColor: const Color(0xFFFFCC29),
-        unselectedItemColor: Colors.grey,
+        unselectedItemColor: Color(0xFF1C2B66),
         showUnselectedLabels: true,
         items: List.generate(4, (index) {
           final iconData = [

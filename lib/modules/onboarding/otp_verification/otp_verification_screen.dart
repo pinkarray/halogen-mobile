@@ -7,6 +7,7 @@ import '../../../shared/widgets/custom_progress_bar.dart';
 import '../../../shared/widgets/halogen_back_button.dart';
 import '../../../shared/widgets/glowing_arrows.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../../shared/helpers/session_manager.dart';
 import 'dart:async';
 
 
@@ -294,6 +295,7 @@ class OTPVerificationScreenState extends State<OTPVerificationScreen> {
                                   provider.saveConfirmationId(response['confirmation_id']);
 
                                   final userModel = provider.toUserModel();
+                                  await SessionManager.saveUserModel(userModel);
 
                                   // (Optional) Save to secure/session storage
                                   // await SessionManager.saveUserProfile(userModel.toJson());

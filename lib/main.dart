@@ -24,6 +24,7 @@ import 'modules/services/outsourcing_talent/outsourcing_talent_screen.dart';
 import 'modules/services/outsourcing_talent/description_of_need_screen.dart';
 import 'modules/services/outsourcing_talent/confirmation_screen.dart';
 import 'modules/settings/settings_routes.dart';
+import 'modules/settings/settings_screen.dart';
 import 'modules/settings/profile/profile_provider.dart';
 
 final _paystackPlugin = PaystackPlugin();
@@ -176,6 +177,7 @@ class HalogenApp extends StatelessWidget {
         '/outsourcing-talent/confirmation':
             (context) => const ConfirmationScreen(),
         ...settingsRoutes,
+        '/settings': (context) => const SettingsScreen(),
       },
     );
   }

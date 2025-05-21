@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'services_routes.dart';
 import '../../shared/widgets/bounce_tap.dart';
+import 'package:halogen/shared/helpers/session_manager.dart';
+import 'package:halogen/models/user_model.dart';
+import 'package:halogen/shared/widgets/home_wrapper.dart';
 
 class CategoryItem {
   final String title;
@@ -40,10 +43,21 @@ class _ServicesScreenState extends State<ServicesScreen> {
   final ScrollController _scrollController = ScrollController();
   int focusedIndex = 0;
 
+  UserModel? _user;
+
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_handleScroll);
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    final user = await SessionManager.getUserModel();
+    if (!mounted) return;
+    setState(() {
+      _user = user;
+    });
   }
 
   void _handleScroll() {
@@ -96,47 +110,52 @@ class _ServicesScreenState extends State<ServicesScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: const [
-                        CircleAvatar(
-                          radius: 20,
-                          backgroundImage: AssetImage(
-                            'assets/images/avatar.jpeg',
+                BounceTap(
+                  onTap: () => Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => const HomeWrapper(initialIndex: 3)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const CircleAvatar(
+                            radius: 20,
+                            backgroundImage: AssetImage('assets/images/avatar.jpeg'),
                           ),
-                        ),
-                        SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Lewis Jane",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Objective',
+                          const SizedBox(width: 10),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _user?.fullName ?? "Loading...",
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Objective',
+                                ),
                               ),
-                            ),
-                            Text(
-                              "You can view your profile from here",
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey,
+                              const Text(
+                                "You can view your profile from here",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const Icon(
-                      Icons.arrow_forward_ios,
-                      size: 16,
-                      color: Colors.grey,
-                    ),
-                  ],
+                            ],
+                          ),
+                        ],
+                      ),
+                      const Icon(
+                        Icons.arrow_forward_ios,
+                        size: 16,
+                        color: Colors.grey,
+                      ),
+                    ],
+                  ),
                 ),
+
                 const SizedBox(height: 20),
                 const Text(
                   "Service Shortcuts",

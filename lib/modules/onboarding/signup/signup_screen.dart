@@ -70,7 +70,7 @@ class SignUpScreenState extends State<SignUpScreen> {
                   ),
                 ),
                 const Text(
-                  'Join Halogen and experience seamless security',
+                  'Join Halogen and experience integrated security',
                   style: TextStyle(
                     fontSize: 16,
                     color: Color(0xFF1C2B66),

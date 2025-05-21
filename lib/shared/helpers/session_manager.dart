@@ -53,4 +53,25 @@ class SessionManager {
     await prefs.remove('userProfile');
     await prefs.remove('deviceId');
   }
+
+  static Future<void> saveUsername(String username) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('username', username);
+  }
+
+  static Future<void> savePassword(String password) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('password', password);
+  }
+
+  static Future<String?> getSavedUsername() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('username');
+  }
+
+  static Future<String?> getSavedPassword() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('password');
+  }
+
 }
