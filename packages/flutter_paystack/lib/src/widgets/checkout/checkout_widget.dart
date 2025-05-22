@@ -93,44 +93,44 @@ class CheckoutWidgetState extends BaseState<CheckoutWidget>
     var securedWidget = Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Icon(Icons.lock, size: 10),
-            Padding(
-              padding: EdgeInsetsDirectional.only(start: 3),
-              child: Text(
-                "Secured by",
-                key: Key("SecuredBy"),
-                style: TextStyle(fontSize: 10),
-              ),
-            )
+            Image.asset(
+              'assets/images/padlock.png',
+              key: Key("PadlockIcon"),
+              package: 'flutter_paystack',
+              height: 10,
+            ),
+            const SizedBox(
+              width: 5.0,
+            ),
+            Text(
+              'Secured by',
+              key: Key("SecuredByText"),
+              style: TextStyle(
+                  fontSize: 10.0, color: context.textTheme().bodySmall?.color),
+            ),
+            const SizedBox(
+              width: 3.0,
+            ),
+            Image.asset(
+              'assets/images/paystack_icon.png',
+              key: Key("PaystackBottomIcon"),
+              package: 'flutter_paystack',
+              height: 16,
+            ),
           ],
         ),
-        SizedBox(height: 5),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            if (widget.logo != null)
-              Padding(
-                padding: EdgeInsetsDirectional.only(end: 3),
-                child: Image.asset(
-                  'assets/images/paystack_icon.png',
-                  key: Key("PaystackBottomIcon"),
-                  package: 'flutter_paystack',
-                  height: 16,
-                ),
-              ),
-            Image.asset(
-              'assets/images/paystack.png',
-              key: Key("PaystackLogo"),
-              package: 'flutter_paystack',
-              height: 15,
-            )
-          ],
+        Image.asset(
+          'assets/images/paystack.png',
+          key: Key("PaystackLogo"),
+          package: 'flutter_paystack',
+          height: 15,
         )
       ],
     );
@@ -141,13 +141,18 @@ class CheckoutWidgetState extends BaseState<CheckoutWidget>
       onCancelPress: onCancelPress,
       title: _buildTitle(),
       content: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(),
         child: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
           behavior: HitTestBehavior.translucent,
           child: Container(
             padding: const EdgeInsets.symmetric(
                 vertical: 10.0, horizontal: 10.0),
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.8,
+            ),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 _showProcessingError()
                     ? _buildErrorWidget()

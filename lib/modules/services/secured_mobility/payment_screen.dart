@@ -29,7 +29,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       context,
       charge: charge,
       method: CheckoutMethod.card,
-      fullscreen: false,
+      fullscreen: false, // Keep this false to avoid layout issues
       logo: Image.asset('assets/images/logocut.png', width: 40, height: 40),
     );
 

@@ -14,7 +14,7 @@ class FundWalletModal extends StatefulWidget {
 
 class _FundWalletModalState extends State<FundWalletModal> {
   final TextEditingController amountController = TextEditingController();
-  final bool _isLoading = false;
+  bool _isLoading = false; // Changed from final to regular variable
   String? _userEmail;
 
   @override
@@ -47,7 +47,9 @@ class _FundWalletModalState extends State<FundWalletModal> {
           physics: const ClampingScrollPhysics(),
           child: Material(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            color: Colors.white,
+            color: const Color(0xFFFFFAEA), // Changed background color here
+            elevation: 8,
+            shadowColor: Colors.black26,
             child: IntrinsicHeight(
               child: AnimatedPadding(
                 duration: const Duration(milliseconds: 200),
@@ -57,50 +59,91 @@ class _FundWalletModalState extends State<FundWalletModal> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      "Add Money to Wallet",
-                      style: TextStyle(
-                        fontFamily: 'Objective',
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1C2B66),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFFFAEA), // Also updated header background to match
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: amountController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: "Enter Amount (₦)",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFFF4F4F4),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: _isLoading ? null : _handlePayment,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1C2B66),
-                        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                      child: const Center(
+                        child: Text(
+                          "Add Money to Wallet",
+                          style: TextStyle(
+                            fontFamily: 'Objective',
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
                         ),
                       ),
-                      child: _isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text(
-                              "Add Funds",
-                              style: TextStyle(
-                                fontFamily: 'Objective',
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min, // Added to prevent flex issues
+                        crossAxisAlignment: CrossAxisAlignment.stretch, // Better alignment
+                        children: [
+                          TextField(
+                            controller: amountController,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              labelText: "Enter Amount (₦)",
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Colors.black12),
                               ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Colors.black12),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Colors.blue),
+                              ),
+                              filled: true,
+                              fillColor: const Color(0xFFF5F9FF),
+                              prefixIcon: const Icon(Icons.attach_money, color: Colors.black54),
                             ),
+                          ),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50, // Fixed height for button
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _handlePayment,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 2,
+                              ),
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2.5,
+                                      ),
+                                    )
+                                  : const Text(
+                                      "Add Funds",
+                                      style: TextStyle(
+                                        fontFamily: 'Objective',
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 12),
                   ],
                 ),
               ),
@@ -127,6 +170,11 @@ class _FundWalletModalState extends State<FundWalletModal> {
       return;
     }
 
+    // Show loading state
+    setState(() {
+      _isLoading = true;
+    });
+
     // Close the keyboard
     FocusScope.of(context).unfocus();
     await Future.delayed(const Duration(milliseconds: 200));
@@ -151,8 +199,8 @@ class _FundWalletModalState extends State<FundWalletModal> {
         navigatorKey.currentContext!, // 👈 launch from app-level context
         method: CheckoutMethod.card,
         charge: charge,
-        fullscreen: true,
-        logo: Image.asset('assets/images/logo.png'),
+        fullscreen: false, // Changed to false to avoid fullscreen layout issues
+        logo: Image.asset('assets/images/logo.png', width: 40, height: 40),
       );
 
       if (response.status == true) {

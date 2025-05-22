@@ -17,11 +17,54 @@ class WalletDashboardScreen extends StatefulWidget {
 class _WalletDashboardScreenState extends State<WalletDashboardScreen> {
   final LocalAuthentication auth = LocalAuthentication();
   bool _authenticated = false;
+  List<Map<String, dynamic>> _mockTransactions = [];
 
   @override
   void initState() {
     super.initState();
     _handleBiometricAuth();
+    _initMockTransactions();
+  }
+
+  void _initMockTransactions() {
+    _mockTransactions = [
+      {
+        'description': 'Physical Security',
+        'amount': 3000.00,
+        'type': 'credit',
+        'status': 'Completed'
+      },
+      {
+        'description': 'Wallet Top-Up',
+        'amount': 5000.00,
+        'type': 'debit',
+        'status': 'Processing'
+      },
+      {
+        'description': 'Digital Protection',
+        'amount': 1500.00,
+        'type': 'credit',
+        'status': 'Completed'
+      },
+      {
+        'description': 'Secured Mobility',
+        'amount': 2250.00,
+        'type': 'credit',
+        'status': 'Completed'
+      },
+      {
+        'description': 'Alarm System',
+        'amount': 1800.00,
+        'type': 'credit',
+        'status': 'Completed'
+      },
+      {
+        'description': 'CCTV Installation',
+        'amount': 4500.00,
+        'type': 'credit',
+        'status': 'Pending'
+      },
+    ];
   }
 
   Future<void> _handleBiometricAuth() async {
@@ -94,27 +137,28 @@ class _WalletDashboardScreenState extends State<WalletDashboardScreen> {
       );
     }
 
-      if (walletProvider.isLoading) {
-        return const Scaffold(
-          backgroundColor: Color(0xFFFFFAEA),
-          body: Center(child: CircularProgressIndicator()),
-        );
-      }
+    if (walletProvider.isLoading) {
+      return const Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFAEA),
+      backgroundColor: Color(0xFFFFFAEA),
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Color(0xFFFFFAEA),
         elevation: 0,
         title: const Text(
-          "My Wallet",
+          "Wallet",
           style: TextStyle(
             fontFamily: 'Objective',
             fontWeight: FontWeight.bold,
-            color: Color(0xFF1C2B66),
+            color: Colors.black,
+            fontSize: 24,
           ),
         ),
-        centerTitle: true,
+        centerTitle: false,
       ),
       body: RefreshIndicator(
         onRefresh: () => walletProvider.refreshTransactions(),
@@ -125,55 +169,61 @@ class _WalletDashboardScreenState extends State<WalletDashboardScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildBalanceCard(walletProvider.availableBalance),
-              const SizedBox(height: 20),
-
-              // Add Money Button
-              ElevatedButton.icon(
-                onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                    ),
-                    builder: (_) => FundWalletModal(
-                      onConfirm: (amount) {
-                        print("💰 Add ₦$amount to wallet");
-                      },
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.add, color: Colors.white),
-                label: const Text(
-                  "Add Money",
-                  style: TextStyle(
-                    fontFamily: 'Objective',
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+              const SizedBox(height: 24),
+              
+              // Action Buttons Row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildActionButton(
+                    icon: Icons.add,
+                    label: "Add Funds",
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                        ),
+                        builder: (_) => FundWalletModal(
+                          onConfirm: (amount) {
+                            print("💰 Add ₦$amount to wallet");
+                          },
+                        ),
+                      );
+                    },
                   ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1C2B66),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                  _buildActionButton(
+                    icon: Icons.receipt_outlined,
+                    label: "Transaction\nHistory",
+                    onTap: () {
+                      // This is already shown below, but could navigate to a dedicated screen
+                    },
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                ),
+                  _buildActionButton(
+                    icon: Icons.swap_horiz,
+                    label: "Transfer",
+                    onTap: () {
+                      // Implement transfer functionality
+                    },
+                  ),
+                ],
               ),
-              const SizedBox(height: 30),
-
+              
+              const SizedBox(height: 32),
+              
               const Text(
                 "Transaction History",
                 style: TextStyle(
                   fontFamily: 'Objective',
-                  fontSize: 16,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1C2B66),
+                  color: Colors.black,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
 
-              if (walletProvider.transactions.isEmpty)
+              if (_mockTransactions.isEmpty && walletProvider.transactions.isEmpty)
                 const Text(
                   "No transactions yet",
                   style: TextStyle(
@@ -183,7 +233,9 @@ class _WalletDashboardScreenState extends State<WalletDashboardScreen> {
                 )
               else
                 Column(
-                  children: walletProvider.transactions.map(_buildTransactionTile).toList(),
+                  children: _mockTransactions.isNotEmpty
+                      ? _mockTransactions.map(_buildTransactionTile).toList()
+                      : walletProvider.transactions.map(_buildTransactionTile).toList(),
                 ),
             ],
           ),
@@ -195,25 +247,27 @@ class _WalletDashboardScreenState extends State<WalletDashboardScreen> {
   Widget _buildBalanceCard(double balance) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFFF5F9FF),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Colors.black12,
-            blurRadius: 8,
-            offset: Offset(0, 4),
+            color: Colors.black.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            "Available Balance",
+            "Balance",
             style: TextStyle(
               fontFamily: 'Objective',
-              fontSize: 14,
+              fontSize: 16,
               color: Colors.black54,
             ),
           ),
@@ -224,7 +278,7 @@ class _WalletDashboardScreenState extends State<WalletDashboardScreen> {
               fontFamily: 'Objective',
               fontWeight: FontWeight.bold,
               fontSize: 28,
-              color: Color(0xFF1C2B66),
+              color: Colors.black,
             ),
           ),
         ],
@@ -232,50 +286,131 @@ class _WalletDashboardScreenState extends State<WalletDashboardScreen> {
     ).animate().fade().slideY(begin: 0.2);
   }
 
-  Widget _buildTransactionTile(dynamic txn) {
-    final isCredit = (txn['type'] ?? "").toLowerCase().contains("credit") || txn['amount'] > 0;
-
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            offset: Offset(0, 2),
+  Widget _buildActionButton({required IconData icon, required String label, required VoidCallback onTap}) {
+    return InkWell(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.black12),
+            ),
+            child: Icon(icon, size: 24, color: Colors.black87),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              fontFamily: 'Objective',
+              fontSize: 12,
+              color: Colors.black87,
+            ),
+            textAlign: TextAlign.center,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTransactionTile(dynamic txn) {
+    final isCredit = (txn['type'] ?? "").toLowerCase().contains("credit") || txn['amount'] > 0;
+    final String transactionType = _getTransactionType(txn['description'] ?? '');
+    final String status = txn['status'] ?? (isCredit ? "Completed" : "Processing");
+    final Color statusColor = status.toLowerCase() == "completed" ? Colors.green : 
+                             status.toLowerCase() == "processing" ? Colors.blue : Colors.orange;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Colors.black12, width: 0.5)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Text(
-              txn['description'] ?? 'Transaction',
-              style: const TextStyle(
-                fontFamily: 'Objective',
-                fontSize: 14,
-                color: Color(0xFF1C2B66),
-              ),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 2,
+          // Transaction icon or bullet
+          Container(
+            margin: const EdgeInsets.only(top: 4, right: 12),
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: isCredit ? Colors.green : Colors.black,
+              shape: BoxShape.circle,
             ),
           ),
-          const SizedBox(width: 8),
-          Text(
-            "${isCredit ? '+' : '-'}₦${txn['amount'].toString()}",
-            style: TextStyle(
-              fontFamily: 'Objective',
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: isCredit ? Colors.green : Colors.red,
+          // Transaction details
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  transactionType,
+                  style: const TextStyle(
+                    fontFamily: 'Objective',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  isCredit ? "Payment" : "Funding",
+                  style: const TextStyle(
+                    fontFamily: 'Objective',
+                    fontSize: 14,
+                    color: Colors.black54,
+                  ),
+                ),
+              ],
             ),
+          ),
+          // Amount and status
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                "₦${txn['amount'].toString()}",
+                style: TextStyle(
+                  fontFamily: 'Objective',
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: isCredit ? Colors.green : Colors.black,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                status,
+                style: TextStyle(
+                  fontFamily: 'Objective',
+                  fontSize: 14,
+                  color: statusColor,
+                ),
+              ),
+            ],
           ),
         ],
       ),
-    ).animate().fade().slideX(begin: 0.2);
+    ).animate().fade().slideX(begin: 0.1);
+  }
+
+  String _getTransactionType(String description) {
+    if (description.toLowerCase().contains('physical security')) {
+      return 'Physical Security';
+    } else if (description.toLowerCase().contains('digital')) {
+      return 'Digital Protection';
+    } else if (description.toLowerCase().contains('mobility')) {
+      return 'Secured Mobility';
+    } else if (description.toLowerCase().contains('top-up') || 
+              description.toLowerCase().contains('fund')) {
+      return 'Wallet Top-Up';
+    } else if (description.toLowerCase().contains('alarm')) {
+      return 'Alarm System';
+    } else if (description.toLowerCase().contains('cctv')) {
+      return 'CCTV Installation';
+    }
+    return description;
   }
 }

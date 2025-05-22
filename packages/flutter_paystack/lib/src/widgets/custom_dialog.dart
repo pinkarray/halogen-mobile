@@ -59,39 +59,51 @@ class CustomAlertDialog extends StatelessWidget {
     Widget widget;
     if (fullscreen) {
       widget = Material(
-        child: Container(
-            child: onCancelPress == null
-                ? Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10.0,
-                      vertical: 20.0,
-                    ),
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: children),
-                  )
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Align(
-                        alignment: Alignment.topRight,
-                        child: IconButton(
-                          icon: Icon(Icons.close),
-                          onPressed: onCancelPress,
-                          color: Colors.black54,
-                          padding: const EdgeInsets.all(15.0),
-                          iconSize: 30.0,
-                        ),
+        child: SafeArea(
+          child: Container(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width,
+                maxHeight: MediaQuery.of(context).size.height,
+              ),
+              child: onCancelPress == null
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10.0,
+                        vertical: 20.0,
                       ),
-                      Expanded(
-                          child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                        child: Column(
-                          children: children,
+                      child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: children),
+                    )
+                  : Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Align(
+                          alignment: Alignment.topRight,
+                          child: IconButton(
+                            icon: Icon(Icons.close),
+                            onPressed: onCancelPress,
+                            color: Colors.black54,
+                            padding: const EdgeInsets.all(15.0),
+                            iconSize: 30.0,
+                          ),
                         ),
-                      ))
-                    ],
-                  )),
+                        Expanded(
+                            child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                          child: SingleChildScrollView(
+                            physics: ClampingScrollPhysics(),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: children,
+                            ),
+                          ),
+                        ))
+                      ],
+                    )),
+        ),
       );
     } else {
       var body = Material(
@@ -169,6 +181,7 @@ class CustomDialog extends StatelessWidget {
         child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width - 40.0,
                 minWidth: expanded
                     ? math.min(
                         (MediaQuery.of(context).size.width - 40.0), 332.0)
@@ -176,7 +189,10 @@ class CustomDialog extends StatelessWidget {
             child: Material(
               elevation: 50.0,
               type: MaterialType.transparency,
-              child: child,
+              child: SingleChildScrollView(
+                physics: ClampingScrollPhysics(),
+                child: child,
+              ),
             ),
           ),
         ),
