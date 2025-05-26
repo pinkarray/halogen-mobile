@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import './provider/digital_security_provider.dart';
+import '../../../shared/helpers/session_manager.dart';
 import '../../../shared/widgets/halogen_back_button.dart';
 import 'surveillance_bottom_sheet.dart';
 import 'anti_surveillance_bottom_sheet.dart';
@@ -33,6 +38,95 @@ class DigitalSecurityScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _submitRequest(BuildContext context) async {
+    final provider = context.read<DigitalSecurityProvider>();
+    final token = await SessionManager.getAuthToken();
+    final payload = provider.toRequestPayload(pin: '0000');
+    final url = Uri.parse('http://185.203.216.113:3004/api/v1/services/requests');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(payload),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => Dialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset('assets/images/logocut.png', height: 80),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Submitted!',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Objective',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Your request has been received.\nA specialist will contact you shortly.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontFamily: 'Objective',
+                      color: Colors.black54,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context); // close modal
+                      Navigator.pop(context); // return to previous screen
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1C2B66),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                    ),
+                    child: const Text(
+                      'Okay',
+                      style: TextStyle(
+                        fontFamily: 'Objective',
+                        fontSize: 14,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      } else {
+        Fluttertoast.showToast(
+          msg: "Submission failed. Try again.",
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
+      }
+    } catch (_) {
+      Fluttertoast.showToast(
+        msg: "Network error. Please check your connection.",
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<DigitalSecurityProvider>();
@@ -59,13 +153,13 @@ class DigitalSecurityScreen extends StatelessWidget {
             children: [
               Stack(
                 alignment: Alignment.center,
-                children: const [
-                  Align(
+                children: [
+                  const Align(
                     alignment: Alignment.centerLeft,
                     child: HalogenBackButton(),
                   ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 40), // prevents overlap
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 40),
                     child: Text(
                       'Digital Security & Privacy Protection',
                       textAlign: TextAlign.center,
@@ -73,11 +167,13 @@ class DigitalSecurityScreen extends StatelessWidget {
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Objective',
+                        color: Color(0xFF1C2B66),
                       ),
                     ),
-                  ),
+                  ).animate().fade(duration: 500.ms).slideY(begin: 0.2),
                 ],
               ),
+
               const SizedBox(height: 20),
 
               Container(
@@ -202,6 +298,28 @@ class DigitalSecurityScreen extends StatelessWidget {
                   }).toList(),
                 ),
               ),
+
+              const SizedBox(height: 24),
+
+              if (provider.isAnyServiceSelected)
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () => _submitRequest(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1C2B66),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                    ),
+                    child: const Text(
+                      'Submit',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontFamily: 'Objective',
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

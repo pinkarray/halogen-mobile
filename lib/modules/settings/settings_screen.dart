@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../wallet/wallet_check_wrapper.dart';
+import 'wallet/wallet_check_wrapper.dart';
 import 'package:halogen/shared/helpers/session_manager.dart';
 import 'package:halogen/models/user_model.dart';
 
@@ -125,64 +125,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 20),
                 _sectionTitle("Security"),
                 _settingsGroup([
-                  _buildSettingTile(Icons.lock_outline, "Change Password", () {}),
+                  _buildSettingTile(Icons.warning_amber_outlined, "SOS Settings", () {
+                    Navigator.pushNamed(context, '/sos-settings');
+                  }),
+                  _buildSettingTile(Icons.shield_outlined, "View Active Services", () {}),
                 ]),
 
                 const SizedBox(height: 20),
-                _sectionTitle("More"),
+                _sectionTitle("Preferences"),
                 _settingsGroup([
-                  _buildSettingTile(Icons.help_outline, "FAQ", () {}),
-                  _buildSettingTile(Icons.headset_mic_outlined, "Support", () {}),
+                  _buildSettingTile(Icons.dark_mode_outlined, "App Theme", () {}),
+                  _buildSettingTile(Icons.language_outlined, "Language", () {}),
                 ]),
 
-                const SizedBox(height: 30),
-
-                // Logout Button
-                GestureDetector(
-                  onTap: () {
-                    // logout logic
-                  },
-                  child: Row(
-                    children: const [
-                      Icon(Icons.logout, color: Color(0xFF1C2B66)),
-                      SizedBox(width: 10),
-                      Text(
-                        "Log out",
-                        style: TextStyle(
-                          fontFamily: 'Objective',
-                          fontSize: 16,
-                          color: Color(0xFF1C2B66),
-                        ),
-                      ),
-                    ],
-                  ),
-                ).animate().fade(duration: 400.ms).moveX(begin: -30),
-
                 const SizedBox(height: 20),
-
-                // Delete Account
-                GestureDetector(
-                  onTap: () {
-                    // delete account logic
-                  },
-                  child: Row(
-                    children: const [
-                      Icon(Icons.delete_forever, color: Colors.red),
-                      SizedBox(width: 10),
-                      Text(
-                        "Delete Account",
-                        style: TextStyle(
-                          fontFamily: 'Objective',
-                          fontSize: 16,
-                          color: Colors.red,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ).animate().fade(duration: 600.ms).moveX(begin: 30),
-
-                const SizedBox(height: 50),
+                _sectionTitle("Help & Info"),
+                _settingsGroup([
+                  _buildSettingTile(Icons.help_outline, "FAQ", () {
+                      Navigator.pushNamed(context, '/faq');
+                  }),
+                  _buildSettingTile(Icons.support_agent, "Support", () {
+                    Navigator.pushNamed(context, '/support');
+                  }),
+                  _buildSettingTile(Icons.description_outlined, "Terms & Conditions", () {
+                    Navigator.pushNamed(context, '/terms');
+                  }),
+                  _buildSettingTile(Icons.privacy_tip_outlined, "Privacy Policy", () {
+                    Navigator.pushNamed(context, '/privacy');
+                  }),
+                ]),
               ],
             ),
           ),

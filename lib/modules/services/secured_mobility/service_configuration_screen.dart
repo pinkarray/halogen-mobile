@@ -2,21 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/widgets/halogen_back_button.dart';
 import '../../../shared/widgets/service_option_group.dart';
+import '../../../shared/widgets/secured_mobility_progress_bar.dart';
 import './providers/secured_mobility_provider.dart';
 
-class SecuredMobilityServiceConfigurationScreen extends StatelessWidget {
+class SecuredMobilityServiceConfigurationScreen extends StatefulWidget {
   const SecuredMobilityServiceConfigurationScreen({super.key});
 
   @override
+  State<SecuredMobilityServiceConfigurationScreen> createState() => _SecuredMobilityServiceConfigurationScreenState();
+}
+
+class _SecuredMobilityServiceConfigurationScreenState extends State<SecuredMobilityServiceConfigurationScreen> {
+  @override
   Widget build(BuildContext context) {
     final provider = Provider.of<SecuredMobilityProvider>(context);
-
-    // ✅ Auto-complete the stage when all required selections are done
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (provider.isServiceConfigurationComplete && provider.currentStage < 3) {
-        provider.markStageComplete(3);
-      }
-    });
 
     return Scaffold(
       body: Container(
@@ -50,22 +49,23 @@ class SecuredMobilityServiceConfigurationScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 24),
-                const Divider(color: Colors.transparent),
-
+                SecuredMobilityProgressBar(
+                  percent: provider.progressPercent,
+                  currentStep: provider.currentStage,
+                ),
+                const SizedBox(height: 24),
                 const ServiceOptionGroup(
                   title: 'Vehicle Choice',
                   sectionKey: 'vehicle_choice',
                   options: ['SUV', 'Sedan'],
                 ),
                 const SizedBox(height: 20),
-
                 const ServiceOptionGroup(
                   title: 'Pilot Vehicle (Hilux)',
                   sectionKey: 'pilot_vehicle',
                   options: ['Yes', 'No'],
                 ),
                 const SizedBox(height: 20),
-
                 const ServiceOptionGroup(
                   title: 'In Car Protection',
                   sectionKey: 'in_car_protection',

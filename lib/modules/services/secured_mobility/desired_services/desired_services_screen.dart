@@ -56,7 +56,10 @@ class _SecuredMobilityDesiredServicesScreenState extends State<SecuredMobilityDe
                     ],
                   ),
                   const SizedBox(height: 20),
-                  SecuredMobilityProgressBar(currentStep: provider.currentStage),
+                  SecuredMobilityProgressBar(
+                    percent: provider.progressPercent,
+                    currentStep: provider.currentStage,
+                  ),
                   const SizedBox(height: 24),
                   TripOptionTile(
                     isSelected: selectedTrip == 'One Way',

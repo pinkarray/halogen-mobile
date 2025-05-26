@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import './providers/outsourcing_talent_provider.dart';
 import '../../../shared/widgets/halogen_back_button.dart';
 import '../../../shared/widgets/glowing_arrows_button.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class DescriptionOfNeedScreen extends StatefulWidget {
   const DescriptionOfNeedScreen({super.key});
@@ -62,22 +63,25 @@ class _DescriptionOfNeedScreenState extends State<DescriptionOfNeedScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ✅ Centered title with safe spacing
               Stack(
                 alignment: Alignment.center,
-                children: const [
-                  Align(
+                children: [
+                  const Align(
                     alignment: Alignment.centerLeft,
                     child: HalogenBackButton(),
                   ),
-                  Text(
+                  const Text(
                     'Description of Need',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Objective',
+                      color: Color(0xFF1C2B66), // ✅ Brand blue
                     ),
-                  ),
+                  )
+                      .animate()
+                      .fade(duration: 400.ms)
+                      .slideY(begin: 0.2), // ✅ Animation
                 ],
               ),
               const SizedBox(height: 24),
@@ -88,6 +92,7 @@ class _DescriptionOfNeedScreenState extends State<DescriptionOfNeedScreen> {
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Objective',
+                  color: Color(0xFF1C2B66),
                 ),
               ),
               const SizedBox(height: 12),

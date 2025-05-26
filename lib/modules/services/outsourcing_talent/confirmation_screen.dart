@@ -3,62 +3,98 @@ import 'package:provider/provider.dart';
 import './providers/outsourcing_talent_provider.dart';
 import '../../../shared/widgets/halogen_back_button.dart';
 import '../../../shared/widgets/glowing_arrows_button.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../../../shared/helpers/session_manager.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
 
 class ConfirmationScreen extends StatelessWidget {
   const ConfirmationScreen({super.key});
 
   void _handleSubmit(BuildContext context) async {
     final provider = context.read<OutsourcingTalentProvider>();
-    provider.markStage3Completed(); // ✅ mark stage complete
+    final payload = provider.toRequestPayload(pin: '0000');
+    final token = await SessionManager.getAuthToken(); // 🔐 Your stored auth token
 
-    await Future.delayed(const Duration(milliseconds: 500));
+    final url = Uri.parse('http://185.203.216.113:3004/api/v1/services/requests');
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Image.asset('assets/images/logocut.png', height: 80),
-              const SizedBox(height: 24),
-              const Text(
-                'Submitted!',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Objective',
-                ),
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(payload),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        provider.markStage3Completed();
+
+        // Success Modal
+        await Future.delayed(const Duration(milliseconds: 300));
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => Dialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset('assets/images/logocut.png', height: 80),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Submitted!',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Objective',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'A customer advocate will contact you soon.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontFamily: 'Objective',
+                      color: Colors.black54,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  GlowingArrowsButton(
+                    text: 'Okay',
+                    onPressed: () {
+                      Navigator.popUntil(context, ModalRoute.withName('/outsourcing-talent'));
+                    },
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-              const Text(
-                'A customer advocate will contact you soon.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontFamily: 'Objective',
-                  color: Colors.black54,
-                ),
-              ),
-              const SizedBox(height: 24),
-              GlowingArrowsButton(
-                text: 'Okay',
-                onPressed: () {
-                  Navigator.popUntil(context, ModalRoute.withName('/outsourcing-talent'));
-                },
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
-    );
+        );
+      } else {
+        Fluttertoast.showToast(
+          msg: "Submission failed. Please try again.",
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
+      }
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: "An error occurred. Please check your connection.",
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+    }
   }
 
-  Widget _buildSection(String title, List<String> items) {
+  Widget _buildSection(String title, List<String> items, int index) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -93,7 +129,10 @@ class ConfirmationScreen extends StatelessWidget {
               )),
         ],
       ),
-    );
+    )
+        .animate()
+        .fade(duration: 400.ms)
+        .slideY(begin: 0.05 * index); // stagger animation
   }
 
   List<String> _extractDomesticStaff(Map<String, dynamic> data) {
@@ -161,78 +200,92 @@ class ConfirmationScreen extends StatelessWidget {
 
     final bool hasAnyData = data.isNotEmpty;
 
-    return Scaffold(
-      resizeToAvoidBottomInset: true,
-      body: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.white, Color(0xFFFFFAEA)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ✅ Centered Header
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: const [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: HalogenBackButton(),
-                    ),
-                    Text(
-                      'Confirmation',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Objective',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
+    final sectionWidgets = <Widget>[];
+    int animationIndex = 0;
 
-              // ✅ Data Sections
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+    if (data['domestic_staff'] != null) {
+      sectionWidgets.add(_buildSection('Domestic Staff', _extractDomesticStaff(data['domestic_staff']!), animationIndex++));
+    }
+    if (data['business_staff'] != null) {
+      sectionWidgets.add(_buildSection('Business Staff', _extractBusinessStaff(data['business_staff']!), animationIndex++));
+    }
+    if (data['background_checks'] != null) {
+      sectionWidgets.add(_buildSection('Background Checks', _extractSimple(data['background_checks']!), animationIndex++));
+    }
+    if (data['investigation'] != null) {
+      sectionWidgets.add(_buildSection('Investigation', _extractSimple(data['investigation']!), animationIndex++));
+    }
+    if (data['lea_liaison'] != null) {
+      sectionWidgets.add(_buildSection('LEA Liaison', _extractSimple(data['lea_liaison']!), animationIndex++));
+    }
+    if (data['description'] != null && data['description']!['text'].toString().isNotEmpty) {
+      sectionWidgets.add(_buildSection('Description', [data['description']!['text']], animationIndex++));
+    }
+
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.white, Color(0xFFFFFAEA)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        resizeToAvoidBottomInset: true,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Animated Header
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Stack(
+                    alignment: Alignment.center,
                     children: [
-                      if (data['domestic_staff'] != null)
-                        _buildSection('Domestic Staff', _extractDomesticStaff(data['domestic_staff']!)),
-                      if (data['business_staff'] != null)
-                        _buildSection('Business Staff', _extractBusinessStaff(data['business_staff']!)),
-                      if (data['background_checks'] != null)
-                        _buildSection('Background Checks', _extractSimple(data['background_checks']!)),
-                      if (data['investigation'] != null)
-                        _buildSection('Investigation', _extractSimple(data['investigation']!)),
-                      if (data['lea_liaison'] != null)
-                        _buildSection('LEA Liaison', _extractSimple(data['lea_liaison']!)),
-                      if (data['description'] != null &&
-                          data['description']!['text'].toString().isNotEmpty)
-                        _buildSection('Description', [data['description']!['text']]),
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: HalogenBackButton(),
+                      ),
+                      const Text(
+                        'Confirmation',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Objective',
+                          color: Color(0xFF1C2B66),
+                        ),
+                      ).animate().fade(duration: 400.ms).slideY(begin: 0.2),
                     ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 24),
 
-              // ✅ Submit Button
-              Center(
-                child: GlowingArrowsButton(
-                  text: 'Submit',
-                  onPressed: hasAnyData ? () => _handleSubmit(context) : null,
+                const SizedBox(height: 24),
+
+                // Data Sections
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: sectionWidgets,
+                    ),
+                  ),
                 ),
-              ),
-            ],
+
+                const SizedBox(height: 24),
+
+                // Submit Button
+                Center(
+                  child: GlowingArrowsButton(
+                    text: 'Submit',
+                    onPressed: hasAnyData ? () => _handleSubmit(context) : null,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

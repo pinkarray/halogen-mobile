@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:halogen/shared/helpers/session_manager.dart';
 
-
 class GreetingHeader extends StatefulWidget {
   const GreetingHeader({super.key});
 
@@ -54,6 +53,7 @@ class _GreetingHeaderState extends State<GreetingHeader> {
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
                 fontFamily: 'Objective',
+                color: Color(0xFF1C2B66), // ✅ Brand blue
               ),
             ),
             const Text(
@@ -73,15 +73,23 @@ class _GreetingHeaderState extends State<GreetingHeader> {
               backgroundImage: AssetImage('assets/images/avatar.jpeg'),
             ),
             const SizedBox(width: 8),
-            Stack(
-              alignment: Alignment.topRight,
-              children: const [
-                Icon(Icons.notifications_none, size: 28),
-                Positioned(
-                  right: 0,
-                  child: CircleAvatar(radius: 5, backgroundColor: Colors.red),
-                ),
-              ],
+            GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(context, '/notifications'); // ✅ Navigation
+              },
+              child: Stack(
+                alignment: Alignment.topRight,
+                children: const [
+                  Icon(Icons.notifications_none, size: 28, color: Color(0xFF1C2B66)),
+                  Positioned(
+                    right: 0,
+                    child: CircleAvatar(
+                      radius: 5,
+                      backgroundColor: Colors.red,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

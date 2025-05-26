@@ -7,6 +7,7 @@ import 'providers/secured_mobility_provider.dart';
 import '../../../shared/widgets/halogen_back_button.dart';
 import '../../../shared/widgets/glowing_arrows_button.dart';
 import '../../../main.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class PaymentScreen extends StatefulWidget {
   const PaymentScreen({super.key});
@@ -141,19 +142,24 @@ class _PaymentScreenState extends State<PaymentScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  children: const [
-                    HalogenBackButton(),
-                    SizedBox(width: 12),
-                    Text(
-                      'Payment',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Objective',
+                    children: [
+                      const HalogenBackButton(),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Payment',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Objective',
+                            color: Color(0xFF1C2B66),
+                          ),
+                        ).animate().fade(duration: 600.ms).slideY(begin: 0.3, end: 0),
                       ),
-                    ),
-                  ],
-                ),
+                      const SizedBox(width: 48),
+                    ],
+                  ),
                 const SizedBox(height: 24),
                 Container(
                   width: double.infinity,
@@ -174,7 +180,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         ),
                       ),
                       Text(
-                        'NGN500,000',
+                        'NGN 150,000,000',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 14,

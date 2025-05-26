@@ -5,6 +5,7 @@ import '../../../shared/widgets/halogen_back_button.dart';
 import '../../../shared/widgets/outsourcing_progress_bar.dart';
 import '../../../shared/widgets/bounce_tap.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class OutsourcingTalentScreen extends StatelessWidget {
   const OutsourcingTalentScreen({super.key});
@@ -13,80 +14,89 @@ class OutsourcingTalentScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<OutsourcingTalentProvider>();
 
-    return Scaffold(
-      body: SafeArea(
-        child: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.white, Color(0xFFFFFAEA)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    const Align(
-                      alignment: Alignment.centerLeft,
-                      child: HalogenBackButton(),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 40),
-                      child: Text(
-                        'Outsourcing & Talent Risk Management',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Objective',
-                          height: 1.3,
-                        ),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.white, Color(0xFFFFFAEA)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Animated Header
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: HalogenBackButton(),
                       ),
-                    ),
-                  ],
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 40),
+                        child: Text(
+                          'Outsourcing & Talent Risk Management',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Objective',
+                            color: Color(0xFF1C2B66),
+                            height: 1.3,
+                          ),
+                        ),
+                      )
+                          .animate()
+                          .fade(duration: 500.ms)
+                          .slideY(begin: 0.2),
+                    ],
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-              OutsourcingProgressBar(
-                currentStep: provider.currentStage,
-                stage1ProgressPercent: provider.stage1ProgressPercent,
-                stage1Completed: provider.stage1Completed,
-                stage2Completed: provider.stage2Completed,
-                stage3Completed: provider.stage3Completed,
-              ),
+                OutsourcingProgressBar(
+                  currentStep: provider.currentStage,
+                  stage1Completed: provider.stage1Completed,
+                  stage2Completed: provider.stage2Completed,
+                  stage3Completed: provider.stage3Completed,
+                ),
 
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-              _buildTile(
-                context,
-                'Desired Services',
-                '/outsourcing-talent/desired-services',
-                provider.isAnyDesiredServiceSelected,
-                true,
-              ),
-              _buildTile(
-                context,
-                'Description of Need',
-                '/outsourcing-talent/description',
-                provider.stage2Completed,
-                provider.stage1Completed,
-              ),
-              _buildTile(
-                context,
-                'Confirmation',
-                '/outsourcing-talent/confirmation',
-                provider.stage3Completed,
-                provider.stage2Completed,
-              ),
-            ],
+                _buildTile(
+                  context,
+                  'Desired Services',
+                  '/outsourcing-talent/desired-services',
+                  provider.isAnyDesiredServiceSelected,
+                  true,
+                ).animate().fade().slideY(begin: 0.1),
+
+                _buildTile(
+                  context,
+                  'Description of Need',
+                  '/outsourcing-talent/description',
+                  provider.stage2Completed,
+                  true,
+                ).animate().fade().slideY(begin: 0.2),
+
+                _buildTile(
+                  context,
+                  'Confirmation',
+                  '/outsourcing-talent/confirmation',
+                  provider.stage3Completed,
+                  true,
+                ).animate().fade().slideY(begin: 0.3),
+              ],
+            ),
           ),
         ),
       ),

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:halogen/shared/helpers/session_manager.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:halogen/shared/widgets/halogen_back_button.dart';
 import 'package:provider/provider.dart';
-import 'profile_provider.dart';
+import 'provider/profile_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -14,32 +13,12 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool _biometricEnabled = false;
-
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
       Provider.of<ProfileProvider>(context, listen: false).loadUser();
-      _loadBiometricPreference();
     });
-  }
-
-  Future<void> _loadBiometricPreference() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _biometricEnabled = prefs.getBool('biometric_enabled') ?? false;
-    });
-  }
-
-  Future<void> _toggleBiometric(bool val) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('biometric_enabled', val);
-    setState(() => _biometricEnabled = val);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(val ? 'Biometric login enabled' : 'Biometric login disabled')),
-    );
   }
 
   Future<void> _launchSupportEmail() async {
@@ -141,12 +120,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onTap: () => Navigator.pushNamed(context, '/change-password'),
               ),
               _buildProfileOption(
-                icon: Icons.fingerprint,
-                label: 'Biometric Login',
-                trailing: Switch(
-                  value: _biometricEnabled,
-                  onChanged: _toggleBiometric,
-                ),
+                icon: Icons.contact_phone,
+                label: 'Emergency Contacts',
+                onTap: () => Navigator.pushNamed(context, '/emergency-contacts'), // To be implemented
               ),
 
               const SizedBox(height: 30),
@@ -165,6 +141,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: Colors.red,
                 onTap: () => _confirmLogout(context),
               ),
+              const SizedBox(height: 30),
+
+                GestureDetector(
+                  onTap: () {
+                    
+                  },
+                  child: Row(
+                    children: const [
+                      Icon(Icons.delete_forever, color: Colors.red),
+                      SizedBox(width: 10),
+                      Text(
+                        "Delete Account",
+                        style: TextStyle(
+                          fontFamily: 'Objective',
+                          fontSize: 16,
+                          color: Colors.red,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ).animate().fade(duration: 600.ms).moveX(begin: 30),
             ],
           );
         },
@@ -214,6 +212,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         title: const Text("Confirm Logout", style: TextStyle(fontFamily: 'Objective')),
         content: const Text("Are you sure you want to log out?", style: TextStyle(fontFamily: 'Objective')),
         actions: [
@@ -223,11 +222,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           TextButton(
             onPressed: () async {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.remove('biometric_enabled');
-              await SessionManager.clearSession();
-              if (context.mounted) {
+              final success = await context.read<ProfileProvider>().logout();
+              if (success && context.mounted) {
                 Navigator.pushNamedAndRemoveUntil(context, '/splash', (route) => false);
+              } else {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Logout failed. Try again.')),
+                );
               }
             },
             child: const Text("Logout", style: TextStyle(color: Colors.red, fontFamily: 'Objective')),

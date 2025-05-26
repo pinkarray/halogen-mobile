@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
 class OutsourcingProgressBar extends StatelessWidget {
-  final int currentStep;
-  final double stage1ProgressPercent;
+  final int currentStep; // 1, 2, or 3
   final bool stage1Completed;
   final bool stage2Completed;
   final bool stage3Completed;
@@ -10,7 +9,6 @@ class OutsourcingProgressBar extends StatelessWidget {
   const OutsourcingProgressBar({
     super.key,
     required this.currentStep,
-    required this.stage1ProgressPercent,
     required this.stage1Completed,
     required this.stage2Completed,
     required this.stage3Completed,
@@ -18,150 +16,125 @@ class OutsourcingProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const brandBlue = Color(0xFF1C2B66);
+    const brandYellow = Color(0xFFFFCC29);
+    const gradient = LinearGradient(
+      colors: [brandBlue, brandYellow],
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
+    );
+
+    // Final progress calculation (based on stage completions only)
+    double percent = 0.0;
+    if (stage1Completed) percent += 0.4;
+    if (stage2Completed) percent += 0.4;
+    if (stage3Completed) percent += 0.2;
+
+    final percentComplete = (percent * 100).clamp(0, 100).round();
+    final stepTitles = ["Desired Services", "Description of Need", "Confirmation"];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         LayoutBuilder(
           builder: (context, constraints) {
             final totalWidth = constraints.maxWidth;
-            final sectionWidth = totalWidth / 3;
-
-            Widget completedPill() {
-              return const Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.check_circle, color: Colors.white, size: 14),
-                    SizedBox(width: 4),
-                    Text(
-                      'Completed',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                        fontFamily: 'Objective',
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }
+            final pillWidth = totalWidth * percent;
 
             return Stack(
               children: [
-                // Background
                 Container(
-                  height: 24,
+                  height: 22,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE0E0E0),
-                    borderRadius: BorderRadius.circular(30),
+                    color: Colors.grey.shade200.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(40),
                   ),
                 ),
-
-                // Stage 1 block
                 Positioned(
-                  left: 0,
-                  child: Container(
-                    height: 24,
-                    width: sectionWidth,
+                  left: 1,
+                  top: 1,
+                  bottom: 1,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 400),
+                    width: pillWidth - 2 < 0 ? 0 : pillWidth - 2,
                     decoration: BoxDecoration(
-                      color: stage1Completed
-                          ? Colors.green
-                          : (currentStep == 1 ? const Color(0xFFBDBDBD) : const Color(0xFFE0E0E0)),
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(30),
-                        bottomLeft: Radius.circular(30),
-                      ),
+                      gradient: gradient,
+                      borderRadius: BorderRadius.circular(40),
                     ),
-                    child: stage1Completed ? completedPill() : null,
                   ),
                 ),
-
-                // Stage 2 block
-                Positioned(
-                  left: sectionWidth,
-                  child: Container(
-                    height: 24,
-                    width: sectionWidth,
-                    color: stage2Completed
-                        ? Colors.green
-                        : (currentStep == 2 ? const Color(0xFFBDBDBD) : const Color(0xFFE0E0E0)),
-                    child: stage2Completed ? completedPill() : null,
-                  ),
-                ),
-
-                // Stage 3 block
-                Positioned(
-                  left: sectionWidth * 2,
-                  child: Container(
-                    height: 24,
-                    width: sectionWidth,
-                    decoration: BoxDecoration(
-                      color: stage3Completed
-                          ? Colors.green
-                          : (currentStep == 3 ? const Color(0xFFBDBDBD) : const Color(0xFFE0E0E0)),
-                      borderRadius: const BorderRadius.only(
-                        topRight: Radius.circular(30),
-                        bottomRight: Radius.circular(30),
-                      ),
+                Positioned.fill(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ShaderMask(
+                          shaderCallback: (bounds) => gradient.createShader(bounds),
+                          child: Text(
+                            "$percentComplete% completed",
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Objective',
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    child: stage3Completed ? completedPill() : null,
                   ),
                 ),
-
-                // Dividers
-                Positioned(left: sectionWidth, child: Container(height: 24, width: 2, color: Colors.white)),
-                Positioned(left: sectionWidth * 2, child: Container(height: 24, width: 2, color: Colors.white)),
               ],
             );
           },
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isSmallScreen = constraints.maxWidth < 360;
 
-        // Labels
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
-            Expanded(
-              child: Center(
-                child: Text(
-                  "Stage 1",
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontFamily: 'Objective',
-                    color: Colors.black,
-                    fontWeight: FontWeight.w600,
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: List.generate(3, (index) {
+                final isActive = currentStep == index + 1;
+                final titleParts = stepTitles[index].split(' ');
+
+                final activeColor = brandBlue;
+                final inactiveColor = brandBlue.withOpacity(0.4);
+
+                return Expanded(
+                  child: Center(
+                    child: isSmallScreen && titleParts.length > 1
+                        ? Column(
+                            children: titleParts.map((part) {
+                              return Text(
+                                part,
+                                style: TextStyle(
+                                  fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                                  color: isActive ? activeColor : inactiveColor,
+                                  fontFamily: 'Objective',
+                                  fontSize: 12,
+                                ),
+                                textAlign: TextAlign.center,
+                              );
+                            }).toList(),
+                          )
+                        : Text(
+                            stepTitles[index],
+                            style: TextStyle(
+                              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                              color: isActive ? activeColor : inactiveColor,
+                              fontFamily: 'Objective',
+                              fontSize: 12,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
                   ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Center(
-                child: Text(
-                  "Stage 2",
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontFamily: 'Objective',
-                    color: Colors.black,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Center(
-                child: Text(
-                  "Stage 3",
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontFamily: 'Objective',
-                    color: Colors.black,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          ],
+                );
+              }),
+            );
+          },
         ),
       ],
     );

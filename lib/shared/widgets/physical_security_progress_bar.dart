@@ -1,224 +1,138 @@
 import 'package:flutter/material.dart';
 
 class PhysicalSecurityProgressBar extends StatelessWidget {
-  final int currentStep; // from 1 to 6
-  final String progressContext; // 'site', 'services', 'result'
-  final int totalSteps = 6;
+  final int currentStep; // 1-based: 1, 2, 3
+  final double percent; // from 0.0 to 1.0
 
   const PhysicalSecurityProgressBar({
     super.key,
     required this.currentStep,
-    required this.progressContext,
+    required this.percent,
   });
 
   @override
   Widget build(BuildContext context) {
+    const brandBlue = Color(0xFF1C2B66);
+    const brandYellow = Color(0xFFFFCC29);
+    const gradient = LinearGradient(
+      colors: [brandBlue, brandYellow],
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
+    );
+
+    final stepTitles = ["Site Inspection", "Desired Services", "Review & Submit"];
+    final percentComplete = (percent * 100).clamp(0, 100).round();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         LayoutBuilder(
           builder: (context, constraints) {
             final totalWidth = constraints.maxWidth;
-            final sectionWidth = totalWidth / 3;
-            final section2Progress = (currentStep - 1).clamp(0, 5) / 5;
-            final section2GreenWidth = sectionWidth * section2Progress;
+            final pillWidth = totalWidth * percent;
 
             return Stack(
               children: [
-                // Light gray background
+                // Background track
                 Container(
-                  height: 24,
+                  height: 22,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEAEAEA),
-                    borderRadius: BorderRadius.circular(30),
+                    color: Colors.grey.shade200.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(40),
                   ),
                 ),
 
-                // Section 1: Site Inspection
+                // Animated gradient progress
                 Positioned(
-                  left: 0,
-                  child: Container(
-                    height: 24,
-                    width: sectionWidth,
+                  left: 1,
+                  top: 1,
+                  bottom: 1,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 400),
+                    width: pillWidth - 2 < 0 ? 0 : pillWidth - 2,
                     decoration: BoxDecoration(
-                      color: progressContext == 'site'
-                          ? const Color(0xFFBDBDBD)
-                          : Colors.green,
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(30),
-                        bottomLeft: Radius.circular(30),
-                      ),
+                      gradient: gradient,
+                      borderRadius: BorderRadius.circular(40),
                     ),
-                    child: progressContext != 'site'
-                        ? const Center(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.check_circle, color: Colors.white, size: 14),
-                                SizedBox(width: 4),
-                                Text(
-                                  'Completed',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                    fontFamily: 'Objective',
-                                  ),
-                                ),
-                              ],
+                  ),
+                ),
+
+                // Completion percentage
+                Positioned.fill(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ShaderMask(
+                          shaderCallback: (bounds) => gradient.createShader(bounds),
+                          child: Text(
+                            "$percentComplete% completed",
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Objective',
+                              color: Colors.white,
                             ),
-                          )
-                        : null,
-                  ),
-                ),
-
-                // Section 2: Base (dark gray bar)
-                Positioned(
-                  left: sectionWidth,
-                  child: Container(
-                    height: 24,
-                    width: sectionWidth,
-                    color: (progressContext == 'services' || progressContext == 'result')
-                        ? const Color(0xFFBDBDBD)
-                        : const Color(0xFFEAEAEA),
-                  ),
-                ),
-
-                // Section 2: Animated Green Growth
-                if (progressContext == 'services')
-                  Positioned(
-                    left: sectionWidth,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 400),
-                      height: 24,
-                      width: section2GreenWidth,
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        borderRadius: section2Progress >= 1
-                            ? BorderRadius.zero
-                            : const BorderRadius.only(
-                                topRight: Radius.circular(12),
-                                bottomRight: Radius.circular(12),
-                              ),
-                      ),
-                    ),
-                  ),
-
-                // Section 2: Desired Services Completed
-                if (currentStep >= 6)
-                  Positioned(
-                    left: sectionWidth,
-                    child: Container(
-                      height: 24,
-                      width: sectionWidth,
-                      decoration: const BoxDecoration(color: Colors.green),
-                      child: const Center(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.check_circle, color: Colors.white, size: 14),
-                            SizedBox(width: 4),
-                            Text(
-                              'Completed',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                                fontFamily: 'Objective',
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
-                  ),
-
-
-                // Section 3: Result
-                Positioned(
-                  left: sectionWidth * 2,
-                  child: Container(
-                    height: 24,
-                    width: sectionWidth,
-                    decoration: BoxDecoration(
-                      color: progressContext == 'result'
-                          ? const Color(0xFFBDBDBD)
-                          : const Color(0xFFEAEAEA),
-                      borderRadius: const BorderRadius.only(
-                        topRight: Radius.circular(30),
-                        bottomRight: Radius.circular(30),
-                      ),
+                      ],
                     ),
                   ),
                 ),
-
-                // Dividers
-                Positioned(left: sectionWidth, child: Container(height: 24, width: 2, color: Colors.white)),
-                Positioned(left: sectionWidth * 2, child: Container(height: 24, width: 2, color: Colors.white)),
-
-                // Step label
-                if (currentStep < totalSteps)
-                  Positioned.fill(
-                    child: Center(
-                      child: Text(
-                        '$currentStep of $totalSteps',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                          fontFamily: 'Objective',
-                        ),
-                      ),
-                    ),
-                  ),
               ],
             );
           },
         ),
-        const SizedBox(height: 8),
 
-        // Labels
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
-            Expanded(
-              child: Center(
-                child: Text(
-                  "Site Inspection",
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontFamily: 'Objective',
-                    color: Color.fromARGB(255, 50, 66, 50),
-                    fontWeight: FontWeight.w600,
+        const SizedBox(height: 12),
+
+        // Step labels
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isSmallScreen = constraints.maxWidth < 360;
+
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: List.generate(stepTitles.length, (index) {
+                final isActive = index == currentStep - 1;
+                final titleParts = stepTitles[index].split(' ');
+
+                final activeColor = brandBlue;
+                final inactiveColor = brandBlue.withOpacity(0.4);
+
+                return Expanded(
+                  child: Center(
+                    child: isSmallScreen && titleParts.length > 1
+                        ? Column(
+                            children: titleParts.map((part) {
+                              return Text(
+                                part,
+                                style: TextStyle(
+                                  fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                                  color: isActive ? activeColor : inactiveColor,
+                                  fontFamily: 'Objective',
+                                  fontSize: 12,
+                                ),
+                                textAlign: TextAlign.center,
+                              );
+                            }).toList(),
+                          )
+                        : Text(
+                            stepTitles[index],
+                            style: TextStyle(
+                              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                              color: isActive ? activeColor : inactiveColor,
+                              fontFamily: 'Objective',
+                              fontSize: 12,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
                   ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Center(
-                child: Text(
-                  "Desired Services",
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontFamily: 'Objective',
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Center(
-                child: Text(
-                  "Result",
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontFamily: 'Objective',
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
-            ),
-          ],
+                );
+              }),
+            );
+          },
         ),
       ],
     );

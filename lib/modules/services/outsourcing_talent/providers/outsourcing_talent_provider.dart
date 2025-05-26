@@ -82,4 +82,51 @@ class OutsourcingTalentProvider extends ChangeNotifier {
     _stage3Completed = false;
     notifyListeners();
   }
+
+  Map<String, dynamic> toRequestPayload({required String pin}) {
+    final List<Map<String, dynamic>> questions = [];
+
+    _sectionDetails.forEach((sectionKey, details) {
+      details.forEach((key, value) {
+        if (key != 'completed') {
+          final label = _humanizeKey(sectionKey, key);
+          questions.add({
+            'question': label,
+            'answer': value,
+          });
+        }
+      });
+    });
+
+    // Add optional description from stage 2
+    if (_sectionDetails['description']?['text'] != null &&
+        _sectionDetails['description']!['text'].toString().trim().isNotEmpty) {
+      questions.add({
+        'question': 'Description of need',
+        'answer': _sectionDetails['description']!['text'],
+      });
+    }
+
+    return {
+      'pin': pin,
+      'ref_code': 'SS-OM',
+      'info': {
+        'questions': questions,
+      },
+    };
+  }
+
+  String _humanizeKey(String section, String key) {
+    final map = {
+      'domestic_staff': 'Domestic Staff',
+      'business_staff': 'Business Staff',
+      'background_checks': 'Background Check',
+      'investigation': 'Investigation',
+      'lea_liaison': 'LEA Liaison',
+    };
+
+    final sectionName = map[section] ?? section;
+    final fieldName = key.replaceAll('_', ' ').toLowerCase();
+    return '$sectionName – ${fieldName[0].toUpperCase()}${fieldName.substring(1)}';
+  }
 }

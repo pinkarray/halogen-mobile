@@ -8,7 +8,6 @@ import '../../../shared/widgets/service_detail_options.dart';
 import '../../../shared/widgets/glowing_arrows_button.dart';
 import 'package:provider/provider.dart';
 import './providers/physical_security_provider.dart';
-import '../../../shared/widgets/home_wrapper.dart';
 
 class DesiredServicesScreen extends StatefulWidget {
   const DesiredServicesScreen({super.key});
@@ -21,54 +20,6 @@ class _DesiredServicesScreenState extends State<DesiredServicesScreen> {
   void _markServiceComplete(String title) {
     final provider = Provider.of<PhysicalSecurityProvider>(context, listen: false);
     provider.markServiceComplete(title);
-
-    if (provider.selectedServices.length == 5) {
-      Future.delayed(const Duration(milliseconds: 300), () {
-        if (!mounted) return;
-        _showSubmissionSuccessModal(context);
-      });
-    }
-  }
-
-  void _showSubmissionSuccessModal(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isDismissible: false,
-      enableDrag: false,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Image.asset('assets/images/logocut.png', height: 70),
-                const SizedBox(height: 20),
-                const Text("Details Submitted!",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Objective')),
-                const SizedBox(height: 12),
-                const Text("Your inspection has been successfully\nscheduled and is currently in the queue.",
-                    style: TextStyle(fontSize: 13, color: Colors.black54, fontFamily: 'Objective'), textAlign: TextAlign.center),
-                const SizedBox(height: 24),
-                GlowingArrowsButton(
-                  text: 'Okay',
-                  onPressed: () {
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (_) => const HomeWrapper(initialIndex: 1)), // 1 = Services tab
-                      (route) => false,
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
   }
 
   void _showBottomSheet({required String title, required List<String> options}) {
@@ -100,10 +51,10 @@ class _DesiredServicesScreenState extends State<DesiredServicesScreen> {
                           child: const CircleAvatar(
                             radius: 16,
                             backgroundColor: Color(0xFFF6F6F6),
-                            child: Icon(Icons.close, size: 16, color: Colors.black),
+                            child: Icon(Icons.close, size: 16, color: Color(0xFF1C2B66)),
                           ),
                         ),
-                        Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'Objective')),
+                        Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'Objective', color: Color(0xFF1C2B66))),
                         const SizedBox(width: 32),
                       ],
                     ),
@@ -158,89 +109,61 @@ class _DesiredServicesScreenState extends State<DesiredServicesScreen> {
     );
   }
 
-  Widget _buildServiceTile(String title, int index, IconData icon) {
+  Widget _buildServiceTile(String title, IconData icon) {
     return Consumer<PhysicalSecurityProvider>(
       builder: (context, provider, _) {
         final isSelected = provider.selectedServices.contains(title);
 
-        bool enabled = true;
-        if (index > 0) {
-          final previousTitles = [
-            "Perimeter Protection",
-            "Patrol",
-            "Visitor Management System",
-            "Intrusion Detection",
-            "Alarm"
-          ];
-          final previousTitle = previousTitles[index - 1];
-          enabled = provider.selectedServices.contains(previousTitle);
-        }
-
-        Widget trailingIcon;
-        if (isSelected) {
-          trailingIcon = const CircleAvatar(
-            radius: 12,
-            backgroundColor: Colors.green,
-            child: Icon(Icons.check, size: 14, color: Colors.white),
-          );
-        } else {
-          trailingIcon = Icon(Icons.arrow_forward_ios_rounded,
-              size: 18, color: enabled ? Colors.black45 : Colors.grey);
-        }
-
-        final tileContent = Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha((0.05 * 255).toInt()),
-                blurRadius: 6,
-                offset: const Offset(0, 4),
-              )
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Icon(icon,
-                      size: 20,
-                      color: enabled
-                          ? (isSelected ? Colors.green : Colors.black87)
-                          : Colors.grey),
-                  const SizedBox(width: 10),
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontFamily: 'Objective',
-                      fontWeight: FontWeight.w600,
-                      color: enabled
-                          ? (isSelected ? Colors.green : Colors.black)
-                          : Colors.grey,
-                    ),
-                  ),
-                ],
-              ),
-              trailingIcon,
-            ],
-          ),
-        );
-
-        if (!enabled) {
-          return Opacity(
-            opacity: 0.4,
-            child: IgnorePointer(child: tileContent),
-          );
-        }
+        final Color activeColor = Color(0xFF1C2B66); // Brand blue
 
         return BounceTap(
           onTap: () => _showBottomSheet(title: title, options: []),
-          child: tileContent,
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha((0.05 * 255).toInt()),
+                  blurRadius: 6,
+                  offset: const Offset(0, 4),
+                )
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      icon,
+                      size: 20,
+                      color: isSelected ? Colors.green : activeColor,
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontFamily: 'Objective',
+                        fontWeight: FontWeight.w600,
+                        color: isSelected ? Colors.green : activeColor,
+                      ),
+                    ),
+                  ],
+                ),
+                isSelected
+                    ? const CircleAvatar(
+                        radius: 12,
+                        backgroundColor: Colors.green,
+                        child: Icon(Icons.check, size: 14, color: Colors.white),
+                      )
+                    : Icon(Icons.arrow_forward_ios_rounded, size: 18, color: activeColor),
+              ],
+            ),
+          ),
         );
       },
     );
@@ -250,7 +173,6 @@ class _DesiredServicesScreenState extends State<DesiredServicesScreen> {
   Widget build(BuildContext context) {
     return Consumer<PhysicalSecurityProvider>(
       builder: (context, provider, _) {
-        final currentStep = 1 + provider.selectedServices.length;
 
         return Scaffold(
           body: Container(
@@ -273,19 +195,23 @@ class _DesiredServicesScreenState extends State<DesiredServicesScreen> {
                         Expanded(
                           child: Text("Physical Security",
                                   textAlign: TextAlign.center,
-                                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, fontFamily: 'Objective'))
+                                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, fontFamily: 'Objective', color: Color(0xFF1C2B66)))
                               .animate()
                               .fade(duration: 400.ms)
                               .slideY(begin: 0.3, end: 0),
                         ),
+                        
                         const SizedBox(width: 48),
                       ],
                     ),
                     const SizedBox(height: 20),
-                    PhysicalSecurityProgressBar(currentStep: currentStep, progressContext: 'services'),
+                    PhysicalSecurityProgressBar(
+                      currentStep: 2,
+                      percent: provider.progressPercent,
+                    ),
                     const SizedBox(height: 24),
                     const Text("Desired Services",
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'Objective')),
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'Objective', color: Color(0xFF1C2B66))),
                     const SizedBox(height: 4),
                     const Text("Choose the services you would love to subscribe to",
                         style: TextStyle(fontSize: 13, color: Colors.grey)),
@@ -293,14 +219,23 @@ class _DesiredServicesScreenState extends State<DesiredServicesScreen> {
                     Expanded(
                       child: ListView(
                         children: [
-                          _buildServiceTile("Perimeter Protection", 0, Icons.security),
-                          _buildServiceTile("Patrol", 1, Icons.directions_walk),
-                          _buildServiceTile("Visitor Management System", 2, Icons.how_to_reg),
-                          _buildServiceTile("Intrusion Detection", 3, Icons.sensors),
-                          _buildServiceTile("Alarm", 4, Icons.notifications_active),
+                          _buildServiceTile("Perimeter Protection", Icons.security),
+                          _buildServiceTile("Patrol", Icons.directions_walk),
+                          _buildServiceTile("Visitor Management System", Icons.how_to_reg),
+                          _buildServiceTile("Intrusion Detection", Icons.sensors),
+                          _buildServiceTile("Alarm", Icons.notifications_active),
                         ],
                       ),
                     ),
+                    if (provider.selectedServices.isNotEmpty)
+                      Center(
+                        child: GlowingArrowsButton(
+                          text: 'Confirm Order',
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/result');
+                          },
+                        ),
+                      ),
                   ],
                 ),
               ),

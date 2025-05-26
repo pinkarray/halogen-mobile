@@ -11,6 +11,48 @@ class PhysicalSecurityProvider extends ChangeNotifier {
   bool addressConfirmed = false;
   String confirmedMapAddress = '';
 
+  bool _requestSent = false;
+  bool get requestSent => _requestSent;
+
+  void markRequestSent() {
+    _requestSent = true;
+    notifyListeners();
+  }
+
+  double get progressPercent {
+    double progress = 0.0;
+
+    // 1. Site Inspection Progress (max 30%)
+    int filled = 0;
+    if (preferredDate != null) filled++;
+    if (preferredTime != null) filled++;
+    if (houseNumber.isNotEmpty) filled++;
+    if (streetName.isNotEmpty) filled++;
+    if (area.isNotEmpty) filled++;
+    if (state.isNotEmpty) filled++;
+    if (addressConfirmed) filled++;
+    progress += (filled * 0.05).clamp(0.0, 0.35); // 5% per field = 30% max
+
+
+    // 2. Desired Services Jump to 65% if any valid selection exists
+    bool hasStructured = structuredSelections.values.any((groupMap) {
+      return groupMap.values.any((catMap) => catMap.values.any((val) => val.isNotEmpty));
+    });
+
+    bool hasFlat = flatSelections.values.any((val) => val.isNotEmpty);
+
+    if (hasStructured || hasFlat) {
+      progress = progress < 0.65 ? 0.65 : progress;
+    }
+
+    // 3. Final Completion
+    if (_requestSent) {
+      progress = 1.0;
+    }
+
+    return progress;
+  }
+
   // Desired services data
   final Set<String> selectedServices = {};
   final Map<String, Map<String, Map<String, String>>> structuredSelections = {};

@@ -5,14 +5,17 @@ import 'providers/user_form_data_provider.dart';
 import 'screens/splash_screen.dart';
 import 'modules/login/login_provider.dart';
 import 'modules/onboarding/signup/signup_provider.dart';
+import 'modules/dashboard/notifications/notification_screen.dart';
 import 'modules/services/services_screen.dart';
 import 'modules/services/physical_security/providers/physical_security_provider.dart';
+import 'modules/services/physical_security/physical_security_result_screen.dart';
+import 'modules/services/physical_security/desired_services_screen.dart';
 import 'modules/services/secured_mobility/providers/secured_mobility_provider.dart';
 import 'modules/services/outsourcing_talent/providers/outsourcing_talent_provider.dart';
 import 'modules/services/digital_security/provider/digital_security_provider.dart';
 import 'modules/services/physical_security/physical_security_screen.dart';
 import 'modules/onboarding/continue_registration/continue_registration_screen.dart';
-import 'modules/wallet/provider/wallet_provider.dart';
+import 'modules/settings/wallet/provider/wallet_provider.dart';
 import 'modules/services/secured_mobility/desired_services/desired_services_screen.dart';
 import 'modules/services/secured_mobility/secured_mobility_screen.dart';
 import 'modules/services/secured_mobility/service_configuration_screen.dart';
@@ -25,7 +28,8 @@ import 'modules/services/outsourcing_talent/description_of_need_screen.dart';
 import 'modules/services/outsourcing_talent/confirmation_screen.dart';
 import 'modules/settings/settings_routes.dart';
 import 'modules/settings/settings_screen.dart';
-import 'modules/settings/profile/profile_provider.dart';
+import 'modules/settings/profile/provider/profile_provider.dart';
+import 'security_profile/providers/security_profile_provider.dart';
 
 final _paystackPlugin = PaystackPlugin();
 PaystackPlugin get paystackPlugin => _paystackPlugin;
@@ -48,6 +52,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => DigitalSecurityProvider()),
         ChangeNotifierProvider(create: (_) => WalletProvider()),
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
+        ChangeNotifierProvider(create: (_) => SecurityProfileProvider()),
       ],
       child: const HalogenApp(),
     ),
@@ -111,7 +116,6 @@ class HalogenApp extends StatelessWidget {
           return Colors.black;
         }),
 
-        // ❌ Remove tap overlay flicker
         dayOverlayColor: WidgetStatePropertyAll(Colors.transparent),
       ),
         textButtonTheme: TextButtonThemeData(
@@ -143,7 +147,12 @@ class HalogenApp extends StatelessWidget {
           checkColor: WidgetStateProperty.all(Colors.white),
         ),
         radioTheme: RadioThemeData(
-          fillColor: WidgetStateProperty.all(Colors.black),
+          fillColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return const Color(0xFF1C2B66); 
+            }
+            return const Color(0xFF1C2B66); 
+          }),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
@@ -152,12 +161,16 @@ class HalogenApp extends StatelessWidget {
             textStyle: const TextStyle(fontFamily: 'Objective'),
           ),
         ),
+        
       ),
       initialRoute: '/splash',
       routes: {
         '/splash': (context) => const SplashScreen(),
+        '/notifications': (context) => const NotificationScreen(),
         '/services': (context) => const ServicesScreen(),
         '/physical-security': (context) => const PhysicalSecurityScreen(),
+        '/desired-services': (_) => const DesiredServicesScreen(),
+        '/result': (_) => const PhysicalSecurityResultScreen(),
         '/continue-registration':
             (context) => const ContinueRegistrationScreen(),
         '/secured-mobility': (context) => const SecuredMobilityScreen(),

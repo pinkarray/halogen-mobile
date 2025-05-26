@@ -8,6 +8,7 @@ import '../../../shared/widgets/underlined_glow_custom_date_picker.dart';
 import '../../../shared/widgets/underlined_glow_custom_time_picker.dart';
 import '../../../shared/widgets/underlined_glow_input_field.dart';
 import '../../../shared/widgets/bounce_tap.dart';
+import '../../../shared/helpers/session_manager.dart';
 import 'location_confirmation_screen.dart';
 import 'desired_services_screen.dart';
 import 'providers/physical_security_provider.dart';
@@ -29,11 +30,31 @@ class _PhysicalSecurityScreenState extends State<PhysicalSecurityScreen> {
   @override
   void initState() {
     super.initState();
-    final provider = Provider.of<PhysicalSecurityProvider>(context, listen: false);
-    houseNumberController.text = provider.houseNumber;
-    streetNameController.text = provider.streetName;
-    areaController.text = provider.area;
-    stateController.text = provider.state;
+      final provider = Provider.of<PhysicalSecurityProvider>(context, listen: false);
+
+      Future.microtask(() async {
+        final userProfile = await SessionManager.getUserProfile();
+
+        // Fill from SessionManager only if provider doesn't already have it
+        if (userProfile != null) {
+          if (provider.houseNumber.isEmpty && userProfile['houseNumber'] != null) {
+            provider.updateInspectionData(houseNum: userProfile['houseNumber']);
+            houseNumberController.text = userProfile['houseNumber'];
+          }
+          if (provider.streetName.isEmpty && userProfile['streetName'] != null) {
+            provider.updateInspectionData(street: userProfile['streetName']);
+            streetNameController.text = userProfile['streetName'];
+          }
+          if (provider.area.isEmpty && userProfile['area'] != null) {
+            provider.updateInspectionData(areaText: userProfile['area']);
+            areaController.text = userProfile['area'];
+          }
+          if (provider.state.isEmpty && userProfile['state'] != null) {
+            provider.updateInspectionData(stateText: userProfile['state']);
+            stateController.text = userProfile['state'];
+          }
+        }
+      });
   }
 
   @override
@@ -88,7 +109,10 @@ class _PhysicalSecurityScreenState extends State<PhysicalSecurityScreen> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                PhysicalSecurityProgressBar(currentStep: currentStep, progressContext: 'site'),
+                PhysicalSecurityProgressBar(
+                  currentStep: 1,
+                  percent: provider.progressPercent,
+                ),
                 const SizedBox(height: 24),
                 const Text("Site Inspection", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'Objective', color: Color(0xFF1C2B66),)),
                 const SizedBox(height: 4),
@@ -127,6 +151,7 @@ class _PhysicalSecurityScreenState extends State<PhysicalSecurityScreen> {
                               controller: houseNumberController,
                               icon: Icons.home,
                               onChanged: (val) => provider.updateInspectionData(houseNum: val.trim()),
+                              textCapitalization: TextCapitalization.words,
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -136,6 +161,7 @@ class _PhysicalSecurityScreenState extends State<PhysicalSecurityScreen> {
                               controller: streetNameController,
                               icon: Icons.map_outlined,
                               onChanged: (val) => provider.updateInspectionData(street: val.trim()),
+                              textCapitalization: TextCapitalization.words,
                             ),
                           ),
                         ],
@@ -149,6 +175,7 @@ class _PhysicalSecurityScreenState extends State<PhysicalSecurityScreen> {
                               controller: areaController,
                               icon: Icons.location_city,
                               onChanged: (val) => provider.updateInspectionData(areaText: val.trim()),
+                              textCapitalization: TextCapitalization.words,
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -158,6 +185,7 @@ class _PhysicalSecurityScreenState extends State<PhysicalSecurityScreen> {
                               controller: stateController,
                               icon: Icons.public,
                               onChanged: (val) => provider.updateInspectionData(stateText: val.trim()),
+                              textCapitalization: TextCapitalization.words,
                             ),
                           ),
                         ],

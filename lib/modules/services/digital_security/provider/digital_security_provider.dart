@@ -31,4 +31,39 @@ class DigitalSecurityProvider extends ChangeNotifier {
     _completedSections.updateAll((key, value) => false);
     notifyListeners();
   }
+
+  /// ✅ Convert to API-ready format
+  List<Map<String, dynamic>> get selectedQuestions {
+    return _completedSections.entries
+        .where((entry) => entry.value)
+        .map((entry) => {
+              'question': 'Selected Service',
+              'answer': _formatKey(entry.key),
+            })
+        .toList();
+  }
+
+  String _formatKey(String key) {
+    switch (key) {
+      case 'surveillance':
+        return 'Surveillance';
+      case 'anti_surveillance':
+        return 'Anti-surveillance';
+      case 'digital_protection':
+        return 'Digital protection';
+      default:
+        return key;
+    }
+  }
+
+  /// ✅ Full request payload
+  Map<String, dynamic> toRequestPayload({required String pin}) {
+    return {
+      'pin': pin,
+      'ref_code': 'SS-PP',
+      'info': {
+        'questions': selectedQuestions,
+      },
+    };
+  }
 }

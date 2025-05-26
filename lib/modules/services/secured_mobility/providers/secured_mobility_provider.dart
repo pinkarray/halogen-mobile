@@ -1,13 +1,64 @@
 import 'package:flutter/material.dart';
 
 class SecuredMobilityProvider extends ChangeNotifier {
-  // Stage tracking
   int _currentStage = 1;
   int get currentStage => _currentStage;
 
+  double get progressPercent {
+    double percent = 0.0;
+
+    // Stage 1
+    final tripComplete = isTripSectionComplete;
+    if (tripComplete) percent += 0.2;
+
+    // Stage 2
+    percent += serviceConfigurationProgress;
+
+    // Stage 3
+    final scheduleComplete = pickupLocation != null &&
+        dropoffLocation != null &&
+        pickupDate != null &&
+        pickupTime != null;
+    if (scheduleComplete) percent += 0.2;
+
+    if (isTripSectionComplete) percent += 0.2;
+    percent += serviceConfigurationProgress; // weighted sub-steps
+    if (pickupLocation != null && dropoffLocation != null && pickupDate != null && pickupTime != null) {
+      percent += 0.2;
+    }
+
+    // Stage 5
+    if (totalCost > 0) percent += 0.2;
+
+    return percent;
+  }
+
+  double get serviceConfigurationProgress {
+    double progress = 0.0;
+
+    final vehicle = serviceConfiguration['vehicle_choice'];
+    final pilot = serviceConfiguration['pilot_vehicle'];
+    final protection = serviceConfiguration['in_car_protection'];
+
+    if (vehicle?['enabled'] == true && (vehicle?['selection'] ?? '').toString().isNotEmpty) {
+      progress += 0.10;
+    }
+
+    if (pilot?['enabled'] == true && (pilot?['selection'] ?? '').toString().isNotEmpty) {
+      progress += 0.03;
+    }
+
+    if (protection?['enabled'] == true && (protection?['selection'] ?? '').toString().isNotEmpty) {
+      progress += 0.07;
+    }
+
+    return progress;
+  }
+
+  bool get isServiceConfigurationComplete => serviceConfigurationProgress >= 0.2;
+
   void initSelectedTrip() {
     if (selectedTripType == null) {
-      selectedTripType = 'One Way';
       pickupAddress = '';
       dropoffAddress = '';
       returnDropoffAddress = '';
@@ -38,7 +89,6 @@ class SecuredMobilityProvider extends ChangeNotifier {
   }
 
   void updateTripType(String type) {
-  
     if (selectedTripType != type) {
       selectedTripType = type;
 
@@ -56,7 +106,6 @@ class SecuredMobilityProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-
 
   void updateOneWayTrip({
     required String pickup,
@@ -113,7 +162,7 @@ class SecuredMobilityProvider extends ChangeNotifier {
         'number_of_days': numberOfDays,
         'interstate_travel': interstateTravel,
         'current_stage': _currentStage,
-  };
+      };
 
   void loadFromMap(Map<String, dynamic> data) {
     selectedTripType = data['trip_type'] as String?;
@@ -139,16 +188,6 @@ class SecuredMobilityProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool get isServiceConfigurationComplete {
-    for (final key in serviceConfiguration.keys) {
-      final item = serviceConfiguration[key]!;
-      if (item['enabled'] == true && (item['selection'] == null || item['selection'].toString().isEmpty)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   String? pickupLocation;
   String? dropoffLocation;
   DateTime? pickupDate;
@@ -172,13 +211,11 @@ class SecuredMobilityProvider extends ChangeNotifier {
   void calculateTotalCost() {
     int cost = 0;
 
-    // 🟢 Step 1: trip type pricing
     if (selectedTripType != null) {
       final tripCost = pricingMap['desired_services']?[selectedTripType];
       if (tripCost is int) cost += tripCost;
     }
 
-    // 🟨 Step 2: service configuration
     for (final section in ['vehicle_choice', 'pilot_vehicle', 'in_car_protection']) {
       final sectionData = serviceConfiguration[section];
       if (sectionData != null && sectionData['enabled'] == true) {

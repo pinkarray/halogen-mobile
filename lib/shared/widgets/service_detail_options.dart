@@ -92,12 +92,11 @@ class _ServiceDetailOptionsState extends State<ServiceDetailOptions> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 🔢 Number and Title
                   Row(
                     children: [
                       CircleAvatar(
                         radius: 12,
-                        backgroundColor: Colors.black,
+                        backgroundColor: Color(0xFF1C2B66),
                         child: Text(
                           '${index + 1}',
                           style: const TextStyle(
@@ -116,6 +115,7 @@ class _ServiceDetailOptionsState extends State<ServiceDetailOptions> {
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
                             fontFamily: 'Objective',
+                            color: Color(0xFF1C2B66)
                           ),
                         ),
                       ),
@@ -139,6 +139,7 @@ class _ServiceDetailOptionsState extends State<ServiceDetailOptions> {
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
                               fontFamily: 'Objective',
+                              color: Color(0xFF1C2B66)
                             ),
                           ),
                           const SizedBox(height: 6),

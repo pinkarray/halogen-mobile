@@ -8,6 +8,7 @@ import 'business_staff/business_staff_bottom_sheet.dart';
 import 'background_check/background_checks_bottom_sheet.dart';
 import 'investigation/investigation_bottom_sheet.dart';
 import 'lea_liaison_service/lea_liaison_services_bottom_sheet.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class OutsourcingDesiredServicesScreen extends StatelessWidget {
   const OutsourcingDesiredServicesScreen({super.key});
@@ -61,18 +62,17 @@ class OutsourcingDesiredServicesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<OutsourcingTalentProvider>();
 
-    return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.white, Color(0xFFFFFAEA)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.white, Color(0xFFFFFAEA)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
         ),
-        child: SafeArea(
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: Column(
@@ -80,27 +80,27 @@ class OutsourcingDesiredServicesScreen extends StatelessWidget {
               children: [
                 Stack(
                   alignment: Alignment.center,
-                  children: const [
-                    Align(
+                  children: [
+                    const Align(
                       alignment: Alignment.centerLeft,
                       child: HalogenBackButton(),
                     ),
-                    Text(
+                    const Text(
                       'Desired Services',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Objective',
+                        color: Color(0xFF1C2B66),
                       ),
-                    ),
+                    ).animate().fade(duration: 500.ms).slideY(begin: 0.2),
                   ],
                 ),
+
                 const SizedBox(height: 24),
 
-                // ✅ Custom progress bar that reflects current stage
                 OutsourcingProgressBar(
                   currentStep: provider.currentStage,
-                  stage1ProgressPercent: provider.stage1ProgressPercent,
                   stage1Completed: provider.stage1Completed,
                   stage2Completed: provider.stage2Completed,
                   stage3Completed: provider.stage3Completed,
@@ -154,7 +154,10 @@ class OutsourcingDesiredServicesScreen extends StatelessWidget {
                               ),
                               onPressed: () => _openBottomSheet(context, key),
                             ),
-                          ),
+                          )
+                              .animate()
+                              .fade(duration: 300.ms)
+                              .slideY(begin: 0.05 * index), // stagger animation
                           if (index != services.length - 1)
                             const Divider(height: 1, color: Color(0xFFE0E0E0)),
                         ],
